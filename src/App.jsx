@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 
 // Existing Producer Imports
 import Sidebar from './components/Sidebar';
@@ -21,7 +21,7 @@ import SuperAdminLogin from './pages/superadmin/SuperAdminLogin';
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Login />} />
@@ -56,7 +56,7 @@ function App() {
         </Route>
 
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
