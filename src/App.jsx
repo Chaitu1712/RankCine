@@ -1,49 +1,53 @@
 import { HashRouter, Routes, Route } from 'react-router-dom';
 
-// Existing Producer Imports
-import Sidebar from './components/Sidebar';
+// Layouts
+import ProducerLayout from './layouts/ProducerLayout';
+import SuperAdminLayout from './layouts/SuperAdminLayout';
+import ProtectedRoute from './components/ProtectedRoute';
+
+// Public Authentication Pages
 import Login from './pages/Login';
+import Registration from './pages/Registration';
+import SuperAdminLogin from './pages/superadmin/SuperAdminLogin';
+
+// Producer Studio Pages
 import Dashboard from './pages/Dashboard';
 import Analytics from './pages/Analytics';
 import Upload from './pages/Upload';
 import Settings from './pages/Settings';
-import Registration from './pages/Registration';
+import AdminProfile from './pages/AdminProfile';
 
-// NEW: Super Admin Imports
-import ProtectedRoute from './components/ProtectedRoute';
-import SuperAdminLayout from './layouts/SuperAdminLayout';
+// Super Admin Pages
 import GlobalDashboard from './pages/superadmin/GlobalDashboard';
 import ModerationQueue from './pages/superadmin/ModerationQueue';
 import UserManagement from './pages/superadmin/UserManagement';
 import MasterContent from './pages/superadmin/MasterContent';
 import AdminSettings from './pages/superadmin/AdminSettings';
-import SuperAdminLogin from './pages/superadmin/SuperAdminLogin';
 
-function App() {
+export default function App() {
   return (
     <HashRouter>
       <Routes>
-        {/* Public Routes */}
+        {/* =========================================
+            1. PUBLIC AUTHENTICATION ROUTES
+            ========================================= */}
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Registration />} />
         <Route path="/admin" element={<SuperAdminLogin />} />
-        {/* Producer Studio Routes (Assuming these are for 'PRODUCER' role eventually) */}
-        <Route path="*" element={
-          <div className="flex">
-            <Sidebar />
-            <div className="ml-64 flex-1">
-              <Routes>
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/analytics/:id" element={<Analytics />} />
-                <Route path="/upload" element={<Upload />} />
-                <Route path="/settings" element={<Settings />} />
-              </Routes>
-            </div>
-          </div>
-        } />
 
         {/* =========================================
-            SUPER ADMIN PROTECTED ROUTES
+            2. PRODUCER STUDIO ROUTES (Uses ProducerLayout)
+            ========================================= */}
+        <Route element={<ProducerLayout />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/analytics/:id" element={<Analytics />} />
+          <Route path="/upload" element={<Upload />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/profile" element={<AdminProfile />} />
+        </Route>
+
+        {/* =========================================
+            3. SUPER ADMIN PROTECTED ROUTES (Uses SuperAdminLayout)
             ========================================= */}
         <Route element={<ProtectedRoute allowedRole="SUPER_ADMIN" />}>
           <Route element={<SuperAdminLayout />}>
@@ -54,10 +58,7 @@ function App() {
             <Route path="/admin/settings" element={<AdminSettings />} />
           </Route>
         </Route>
-
       </Routes>
     </HashRouter>
   );
 }
-
-export default App;
