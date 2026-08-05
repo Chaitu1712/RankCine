@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 // Layouts
 import ProducerLayout from './layouts/ProducerLayout';
@@ -26,7 +26,7 @@ import AdminSettings from './pages/superadmin/AdminSettings';
 
 export default function App() {
   return (
-    <HashRouter>
+    <BrowserRouter>
       <Routes>
         {/* =========================================
             1. PUBLIC AUTHENTICATION ROUTES
@@ -36,7 +36,7 @@ export default function App() {
         <Route path="/admin" element={<SuperAdminLogin />} />
 
         {/* =========================================
-            2. PRODUCER STUDIO ROUTES (Uses ProducerLayout)
+            2. PRODUCER STUDIO ROUTES
             ========================================= */}
         <Route element={<ProducerLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
@@ -47,7 +47,7 @@ export default function App() {
         </Route>
 
         {/* =========================================
-            3. SUPER ADMIN PROTECTED ROUTES (Uses SuperAdminLayout)
+            3. SUPER ADMIN PROTECTED ROUTES
             ========================================= */}
         <Route element={<ProtectedRoute allowedRole="SUPER_ADMIN" />}>
           <Route element={<SuperAdminLayout />}>
@@ -59,6 +59,6 @@ export default function App() {
           </Route>
         </Route>
       </Routes>
-    </HashRouter>
+    </BrowserRouter>
   );
 }
