@@ -17,6 +17,7 @@ import ModerationQueue from './pages/superadmin/ModerationQueue';
 import UserManagement from './pages/superadmin/UserManagement';
 import MasterContent from './pages/superadmin/MasterContent';
 import AdminSettings from './pages/superadmin/AdminSettings';
+import SuperAdminLogin from './pages/superadmin/SuperAdminLogin';
 
 function App() {
   return (
@@ -25,7 +26,7 @@ function App() {
         {/* Public Routes */}
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Registration />} />
-        
+        <Route path="/admin" element={<SuperAdminLogin />} />
         {/* Producer Studio Routes (Assuming these are for 'PRODUCER' role eventually) */}
         <Route path="*" element={
           <div className="flex">
