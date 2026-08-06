@@ -36,20 +36,22 @@ export default function App() {
         <Route path="/admin" element={<SuperAdminLogin />} />
 
         {/* =========================================
-            2. PRODUCER STUDIO ROUTES
+            2. PROTECTED PRODUCER STUDIO ROUTES
             ========================================= */}
-        <Route element={<ProducerLayout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/analytics/:id" element={<Analytics />} />
-          <Route path="/upload" element={<Upload />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/profile" element={<AdminProfile />} />
+        <Route element={<ProtectedRoute allowedRole="PRODUCER" redirectTo="/" />}>
+          <Route element={<ProducerLayout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/analytics/:id" element={<Analytics />} />
+            <Route path="/upload" element={<Upload />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/profile" element={<AdminProfile />} />
+          </Route>
         </Route>
 
         {/* =========================================
-            3. SUPER ADMIN PROTECTED ROUTES
+            3. PROTECTED SUPER ADMIN ROUTES
             ========================================= */}
-        <Route element={<ProtectedRoute allowedRole="SUPER_ADMIN" />}>
+        <Route element={<ProtectedRoute allowedRole="SUPER_ADMIN" redirectTo="/admin" />}>
           <Route element={<SuperAdminLayout />}>
             <Route path="/admin/dashboard" element={<GlobalDashboard />} />
             <Route path="/admin/moderation" element={<ModerationQueue />} />

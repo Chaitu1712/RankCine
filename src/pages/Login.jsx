@@ -5,9 +5,12 @@ export default function Login() {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    navigate('/dashboard'); // Fake login redirects to dashboard
-  };
+    
+    localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('userRole', 'PRODUCER');
 
+    navigate('/dashboard');
+  };
   return (
     <div className="flex h-screen bg-white">
       

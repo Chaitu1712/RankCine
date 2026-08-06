@@ -4,10 +4,13 @@ import { Shield, Fingerprint } from 'lucide-react';
 export default function SuperAdminLogin() {
   const navigate = useNavigate();
 
-  const handleAdminLogin = (e) => {
+ const handleAdminLogin = (e) => {
     e.preventDefault();
-    // In a real app, you would authenticate and set the SUPER_ADMIN role here
-    navigate('/admin/dashboard'); 
+
+    localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('userRole', 'SUPER_ADMIN');
+
+    navigate('/admin/dashboard');
   };
 
   return (
