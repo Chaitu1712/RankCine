@@ -16,21 +16,14 @@ export const mockMovies = [
       { subject: 'Audio', A: 88, fullMark: 100 },
     ],
     demographics: {
-      age: [ 
-        { name: "18-24", value: 42 }, 
-        { name: "25-34", value: 38 }, 
-        { name: "35+", value: 20 } 
-      ],
-      gender: [ 
-        { name: "Female", value: 54 }, 
-        { name: "Male", value: 41 }, 
-        { name: "Other", value: 5 } 
-      ]
+      age: [ { name: "18-24", value: 42 }, { name: "25-34", value: 38 }, { name: "35+", value: 20 } ],
+      gender: [ { name: "Female", value: 54 }, { name: "Male", value: 41 }, { name: "Other", value: 5 } ]
     },
     reviews: [
-      { tag: "HIGH RELEVANCE", time: "2 MINS AGO", text: "The visual language of 'Neon Horizon' is breathtaking. The use of practical effects blended with minimalist CGI creates a unique blueprint-style aesthetic I haven't seen in years.", score: 9.5, sentiment: "POSITIVE" },
-      { tag: "STRUCTURAL INSIGHT", time: "1 HOUR AGO", text: "Pacing felt slightly staggered in the second act, but the sound design kept the tension palpable. The orchestral score is haunting and structural.", score: 7.2, sentiment: "MIXED" },
-      { tag: "TECHNICAL MERIT", time: "4 HOURS AGO", text: "Lighting choices during the climax were too dark on mobile screens, though the underlying cinematography is mathematically perfect.", score: 6.8, sentiment: "NEGATIVE" }
+      { id: "r-1", format: "text", user: "@ARCHI_Lover", tag: "HIGH RELEVANCE", time: "2 MINS AGO", timestamp: 1718000000, text: "The visual language of 'Neon Horizon' is breathtaking. The use of practical effects blended with minimalist CGI creates a unique blueprint-style aesthetic.", score: 9.5, sentiment: "POSITIVE", relevanceScore: 98 },
+      { id: "r-2", format: "audio", user: "@VOICE_AUDITOR", tag: "AUDIO FEEDBACK", time: "15 MINS AGO", timestamp: 1717990000, duration: "0:45", text: "[Transcribed Audio]: The sound mixing on the trailer was super crisp. The low-frequency bass drop at 0:30 gave me chills.", score: 8.8, sentiment: "POSITIVE", relevanceScore: 85, audioUrl: "https://example.com/audio1.mp3" },
+      { id: "r-3", format: "video", user: "@CRITIC_JOHN", tag: "VIDEO AUDIT", time: "1 HOUR AGO", timestamp: 1717950000, duration: "1:20", text: "[Transcribed Video]: Here is my visual reactions to Act 2. Notice how the lighting contrast shifts from cool gray to warm amber.", score: 7.2, sentiment: "MIXED", relevanceScore: 92, videoUrl: "https://example.com/video1.mp4" },
+      { id: "r-4", format: "text", user: "@STRUCTURAL_GRID", tag: "TECHNICAL MERIT", time: "4 HOURS AGO", timestamp: 1717900000, text: "Lighting choices during the climax were slightly too dark on mobile displays.", score: 6.8, sentiment: "NEGATIVE", relevanceScore: 60 }
     ]
   },
   {
@@ -50,20 +43,11 @@ export const mockMovies = [
       { subject: 'Audio', A: 95, fullMark: 100 },
     ],
     demographics: {
-      age: [ 
-        { name: "18-24", value: 15 }, 
-        { name: "25-34", value: 55 }, 
-        { name: "35+", value: 30 } 
-      ],
-      gender: [ 
-        { name: "Female", value: 48 }, 
-        { name: "Male", value: 50 }, 
-        { name: "Other", value: 2 } 
-      ]
+      age: [ { name: "18-24", value: 15 }, { name: "25-34", value: 55 }, { name: "35+", value: 30 } ],
+      gender: [ { name: "Female", value: 48 }, { name: "Male", value: 50 }, { name: "Other", value: 2 } ]
     },
     reviews: [
-      { tag: "AUDIO FIDELITY", time: "1 DAY AGO", text: "The vocal mixing on this episode is pristine. Every architectural concept was explained with incredible clarity without relying on visual aids.", score: 9.0, sentiment: "POSITIVE" },
-      { tag: "PACING", time: "2 DAYS AGO", text: "The middle segment dragged a bit when discussing concrete load limits, but the opening and closing thoughts were brilliant.", score: 7.0, sentiment: "MIXED" }
+      { id: "r-5", format: "audio", user: "@POD_FANATIC", tag: "AUDIO FEEDBACK", time: "1 DAY AGO", timestamp: 1717800000, duration: "2:10", text: "[Transcribed Audio]: The guest speaker explained concrete load-bearing limits with extreme precision.", score: 9.0, sentiment: "POSITIVE", relevanceScore: 90, audioUrl: "https://example.com/audio2.mp3" }
     ]
   },
   {
@@ -83,19 +67,45 @@ export const mockMovies = [
       { subject: 'Visuals', A: 40, fullMark: 100 },
     ],
     demographics: {
-      age: [ 
-        { name: "18-24", value: 10 }, 
-        { name: "25-34", value: 30 }, 
-        { name: "35+", value: 60 } 
-      ],
-      gender: [ 
-        { name: "Female", value: 30 }, 
-        { name: "Male", value: 65 }, 
-        { name: "Other", value: 5 } 
-      ]
+      age: [ { name: "18-24", value: 10 }, { name: "25-34", value: 30 }, { name: "35+", value: 60 } ],
+      gender: [ { name: "Female", value: 30 }, { name: "Male", value: 65 }, { name: "Other", value: 5 } ]
     },
-    reviews: [
-      { tag: "CONTENT WARNING", time: "3 DAYS AGO", text: "The formatting breaks completely on mobile devices. The text overlaps with the wireframe images, making it impossible to read.", score: 4.0, sentiment: "NEGATIVE" }
-    ]
+    reviews: []
+  }
+];
+
+export const mockCampaigns = [
+  {
+    id: "c-1",
+    mediaId: "m-1",
+    sponsorName: "Axiom Design Vault",
+    title: "Architectural Asset Pack v2.0",
+    percentileThreshold: 95,
+    totalBudget: "$5,000",
+    claimedBudget: "$3,250",
+    activeVouchers: 130,
+    status: "ACTIVE"
+  },
+  {
+    id: "c-2",
+    mediaId: "m-1",
+    sponsorName: "Vellum Render Lab",
+    title: "Pro Octane Shader Preset Key",
+    percentileThreshold: 90,
+    totalBudget: "$2,500",
+    claimedBudget: "$2,500",
+    activeVouchers: 100,
+    status: "FINISHED"
+  },
+  {
+    id: "c-3",
+    mediaId: "m-2",
+    sponsorName: "Structural Audio Lab",
+    title: "Pro Soundscape Preset Key",
+    percentileThreshold: 90,
+    totalBudget: "$2,000",
+    claimedBudget: "$800",
+    activeVouchers: 40,
+    status: "PAUSED"
   }
 ];
