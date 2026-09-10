@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "505940638686",
+    "project_id": "rankcine-d1a2c",
+    "storage_bucket": "rankcine-d1a2c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:505940638686:android:b681c655971c5f93593b4f",
+        "android_client_info": {
+          "package_name": "com.rankcine.rankcine"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "505940638686-rjhpajqnqpo537rkc6jjv8lt6kuocrlm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWyja8AsmuyM3PfZ1GZLox3rbvWufST5U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "505940638686-rjhpajqnqpo537rkc6jjv8lt6kuocrlm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
