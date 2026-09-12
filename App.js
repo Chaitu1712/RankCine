@@ -6,7 +6,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Feather } from '@expo/vector-icons';
-import { COLORS } from './constants/theme';
+import { COLORS, ThemeProvider, useTheme } from './constants/theme';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 
 import OnboardingScreen from './screens/OnboardingScreen';
@@ -23,6 +23,7 @@ import LeaderboardRewardsScreen from './screens/LeaderboardRewardsScreen';
 import ReportContentScreen from './screens/ReportContentScreen';
 import EditProfileScreen from './screens/EditProfileScreen';
 import HelpSupportScreen from './screens/HelpSupportScreen';
+import SettingsScreen from './screens/SettingsScreen'; // Subtask 3.1
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -30,11 +31,12 @@ const Tab = createBottomTabNavigator();
 function CustomTabBar({ state, descriptors, navigation }) {
   const insets = useSafeAreaInsets();
   const { t } = useLanguage();
+  const { theme } = useTheme();
 
   return (
     <View style={[
       styles.customTabBar, 
-      { paddingBottom: Math.max(insets.bottom, 12) } 
+      { paddingBottom: Math.max(insets.bottom, 12), backgroundColor: theme.surface, borderTopColor: theme.primary } 
     ]}>
       {state.routes.map((route, index) => {
         const isFocused = state.index === index;
@@ -65,7 +67,7 @@ function CustomTabBar({ state, descriptors, navigation }) {
           labelName = t('tab_profile');
         }
 
-        const iconColor = isFocused ? COLORS.primary : COLORS.textMuted;
+        const iconColor = isFocused ? theme.primary : theme.textMuted;
 
         return (
           <TouchableOpacity
@@ -74,12 +76,12 @@ function CustomTabBar({ state, descriptors, navigation }) {
             style={styles.tabItem}
             activeOpacity={0.8}
           >
-            {isFocused && <View style={styles.activeTopLine} />}
+            {isFocused && <View style={[styles.activeTopLine, { backgroundColor: theme.primary }]} />}
             <Feather name={iconName} size={20} color={iconColor} />
             <Text style={[
               styles.tabLabel, 
               { color: iconColor },
-              isFocused && styles.tabLabelFocused
+              isFocused && [styles.tabLabelFocused, { color: theme.primary }]
             ]}>
               {labelName}
             </Text>
@@ -137,25 +139,28 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <LanguageProvider>
-        <NavigationContainer>
-          <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName={initialRoute}>
-            <Stack.Screen name="Language" component={LanguageScreen} />
-            <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-            <Stack.Screen name="Main" component={MainTabs} />
-            <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="Register" component={RegisterScreen} />
-            <Stack.Screen name="RateContent" component={RateContentScreen} />
-            <Stack.Screen name="ReviewSubmitted" component={ReviewSubmittedScreen} />
-            <Stack.Screen name="MyReviewedItems" component={MyReviewedItemsScreen} />
-            <Stack.Screen name="MyRewards" component={MyRewardsScreen} />
-            <Stack.Screen name="LeaderboardRewards" component={LeaderboardRewardsScreen} />
-            <Stack.Screen name="ReportContent" component={ReportContentScreen} />
-            <Stack.Screen name="EditProfile" component={EditProfileScreen} />
-            <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />
-          </Stack.Navigator>
-        </NavigationContainer>
-      </LanguageProvider>
+      <ThemeProvider>
+        <LanguageProvider>
+          <NavigationContainer>
+            <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName={initialRoute}>
+              <Stack.Screen name="Language" component={LanguageScreen} />
+              <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+              <Stack.Screen name="Main" component={MainTabs} />
+              <Stack.Screen name="Login" component={LoginScreen} />
+              <Stack.Screen name="Register" component={RegisterScreen} />
+              <Stack.Screen name="RateContent" component={RateContentScreen} />
+              <Stack.Screen name="ReviewSubmitted" component={ReviewSubmittedScreen} />
+              <Stack.Screen name="MyReviewedItems" component={MyReviewedItemsScreen} />
+              <Stack.Screen name="MyRewards" component={MyRewardsScreen} />
+              <Stack.Screen name="LeaderboardRewards" component={LeaderboardRewardsScreen} />
+              <Stack.Screen name="ReportContent" component={ReportContentScreen} />
+              <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+              <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />
+              <Stack.Screen name="Settings" component={SettingsScreen} />
+            </Stack.Navigator>
+          </NavigationContainer>
+        </LanguageProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }

@@ -14,7 +14,6 @@ export const TRANSLATIONS = {
     syncing_stream: 'SYNCING ARCHITECTURAL STREAM...',
     no_content_matched: 'NO CONTENT MATCHED',
     no_content_sub: 'No assets found matching your fuzzy search query.',
-    ai_pre_score: 'AI PRE-SCORE',
     rate: 'RATE',
     consensus_draw: '0.5 CONSENSUS DRAW',
     filter_media_types: 'FILTER MEDIA TYPES',
@@ -34,12 +33,15 @@ export const TRANSLATIONS = {
     ai_formatting_on: 'AI FORMATTING STATUS: ON',
     record_audio_video: 'RECORD AUDIO/VIDEO',
     type_input_placeholder: 'Type text input here or attach audio/video recording...',
-    processing_ai: 'PROCESSING GEMINI AI...',
+    processing_ai: 'PROCESSING AI...',
     submit_review: 'SUBMIT REVIEW',
     report_content: 'REPORT CONTENT',
     submission_analytics: 'SUBMISSION ANALYTICS',
     rating: 'RATING',
-    quality: 'QUALITY',
+    sentiment_rating: 'SENTIMENT RATING',
+    text_review_quality: 'TEXT REVIEW QUALITY',
+    text_review_quality_desc: 'Scored from 0 to 100 based on qualitative substance, reasoning, articulation, and constructive technical critique.',
+    ai_audit_synthesis: 'AI AUDIT SYNTHESIS',
     ai_synthesized_review_output: 'AI SYNTHESIZED REVIEW OUTPUT',
     return_to_feed: 'RETURN TO FEED ►',
     share_audit: 'SHARE AUDIT',
@@ -119,7 +121,8 @@ export const TRANSLATIONS = {
     gender_optional: 'GENDER (OPTIONAL)',
     male: 'MALE',
     female: 'FEMALE',
-    other: 'OTHER',
+    other: "DOESN'T WANT TO DISCLOSE",
+    gender_undisclosed: "DOESN'T WANT TO DISCLOSE",
     save_profile: 'SAVE PROFILE',
     saving: 'SAVING...',
     select_languages_modal: 'SELECT LANGUAGES KNOWN',
@@ -199,8 +202,25 @@ export const TRANSLATIONS = {
     Originality: 'Originality',
     Audio: 'Audio',
     Direction: 'Direction',
-    Cinematography: 'Cinematography'
+    Cinematography: 'Cinematography',
+    
+    // Subtask 3.3 & 3.4 additions
+    mandatory_fields_notice: 'Fields marked with a red asterisk (*) are mandatory.',
+    why_needed: '[ Why is this needed? ]',
+    why_needed_toggle: '[ Why is this needed? ]',
+    why_dob_needed: 'Required to filter age-appropriate content ratings (ALL, 13+, 16+, 18+) and comply with DPDP Act 2023.',
+    dob_explanation: 'Required to filter age-appropriate content ratings (ALL, 13+, 16+, 18+) and comply with DPDP Act 2023.',
+    address_details: 'PHYSICAL ADDRESS',
+    why_address_needed: 'Required to determine regional audience consensus and process statutory tax reporting (TDS Section 194R) for Rate-to-Earn sponsor rewards.',
+    address_explanation: 'Required to determine regional audience consensus and process statutory tax reporting (TDS Section 194R) for Rate-to-Earn sponsor rewards.',
+    landmark: 'Landmark (Optional)',
+    landmark_optional: 'LANDMARK (OPTIONAL)',
+    landmark_placeholder: 'e.g. Near Metro Station / Behind Civic Park',
+    account_not_found: 'ACCOUNT NOT FOUND',
+    account_not_found_desc: 'No consumer profile is registered under this phone number. Would you like to create a new profile now?',
+    create_profile: 'CREATE PROFILE'
   },
+
   HI: {
     choose_language: 'अपनी भाषा चुनें',
     tab_discover: 'खोजें',
@@ -210,7 +230,6 @@ export const TRANSLATIONS = {
     syncing_stream: 'स्ट्रीम लोड हो रही है...',
     no_content_matched: 'कोई परिणाम नहीं मिला',
     no_content_sub: 'आपकी खोज से मेल खाने वाला कोई कंटेंट नहीं मिला।',
-    ai_pre_score: 'एआई स्कोर',
     rate: 'रेट करें',
     consensus_draw: '0.5 आम सहमति ड्रा',
     filter_media_types: 'मीडिया प्रकार फ़िल्टर करें',
@@ -235,7 +254,10 @@ export const TRANSLATIONS = {
     report_content: 'रिपोर्ट करें',
     submission_analytics: 'सबमिशन विश्लेषण',
     rating: 'रेटिंग',
-    quality: 'गुणवत्ता',
+    sentiment_rating: 'सेंटीमेंट रेटिंग',
+    text_review_quality: 'समीक्षा गुणवत्ता',
+    text_review_quality_desc: 'गुणात्मक गहराई, तर्क और तकनीकी समीक्षा के आधार पर 0 से 100 तक का स्कोर।',
+    ai_audit_synthesis: 'एआई ऑडिट संश्लेषण',
     ai_synthesized_review_output: 'एआई सारांश आउटपुट',
     return_to_feed: 'फ़ीड पर वापस जाएं ►',
     share_audit: 'ऑडिट साझा करें',
@@ -315,7 +337,8 @@ export const TRANSLATIONS = {
     gender_optional: 'लिंग (वैकल्पिक)',
     male: 'पुरुष',
     female: 'महिला',
-    other: 'अन्य',
+    other: 'प्रकट नहीं करना चाहते',
+    gender_undisclosed: 'प्रकट नहीं करना चाहते',
     save_profile: 'प्रोफ़ाइल सहेजें',
     saving: 'सहेजा जा रहा है...',
     select_languages_modal: 'ज्ञात भाषाएँ चुनें',
@@ -395,8 +418,25 @@ export const TRANSLATIONS = {
     Originality: 'मौलिकता',
     Audio: 'ऑडियो',
     Direction: 'निर्देशन',
-    Cinematography: 'छायांकन'
+    Cinematography: 'छायांकन',
+
+    // Subtask 3.3 & 3.4 additions
+    mandatory_fields_notice: 'लाल तारे (*) वाले फ़ील्ड अनिवार्य हैं।',
+    why_needed: '[ यह क्यों आवश्यक है? ]',
+    why_needed_toggle: '[ यह क्यों आवश्यक है? ]',
+    why_dob_needed: 'उम्र-उपयुक्त सामग्री रेटिंग (ALL, 13+, 16+, 18+) फ़िल्टर करने और DPDP अधिनियम 2023 का पालन करने के लिए आवश्यक है।',
+    dob_explanation: 'उम्र-उपयुक्त सामग्री रेटिंग (ALL, 13+, 16+, 18+) फ़िल्टर करने और DPDP अधिनियम 2023 का पालन करने के लिए आवश्यक है।',
+    address_details: 'भौतिक पता',
+    why_address_needed: 'क्षेत्रीय ऑडियंस सहमति निर्धारित करने और रेट-टू-अर्न स्पॉन्सर पुरस्कारों हेतु वैधानिक कर रिपोर्टिंग (TDS धारा 194R) प्रोसेस करने के लिए आवश्यक है।',
+    address_explanation: 'क्षेत्रीय ऑडियंस सहमति निर्धारित करने और रेट-टू-अर्न स्पॉन्सर पुरस्कारों हेतु वैधानिक कर रिपोर्टिंग (TDS धारा 194R) प्रोसेस करने के लिए आवश्यक है।',
+    landmark: 'लैंडमार्क (वैकल्पिक)',
+    landmark_optional: 'लैंडमार्क (वैकल्पिक)',
+    landmark_placeholder: 'उदा. मेट्रो स्टेशन के पास / पार्क के पीछे',
+    account_not_found: 'खाता नहीं मिला',
+    account_not_found_desc: 'इस फ़ोन नंबर के तहत कोई प्रोफ़ाइल पंजीकृत नहीं है। क्या आप अभी एक नया प्रोफ़ाइल बनाना चाहते हैं?',
+    create_profile: 'प्रोफ़ाइल बनाएं'
   },
+
   TE: {
     choose_language: 'మీ భాషను ఎంచుకోండి',
     tab_discover: 'కనుగొనండి',
@@ -406,7 +446,6 @@ export const TRANSLATIONS = {
     syncing_stream: 'స్ట్రీమ్ లోడ్ అవుతోంది...',
     no_content_matched: 'కంటెంట్ కనుగొనబడలేదు',
     no_content_sub: 'మీ శోధనకు సరిపోలే కంటెంట్ కనుగొనబడలేదు.',
-    ai_pre_score: 'ఏఐ స్కోర్',
     rate: 'రేట్ చేయండి',
     consensus_draw: '0.5 కాన్సెన్సస్ డ్రా',
     filter_media_types: 'మీడియా రకాలు ఫిల్టర్ చేయండి',
@@ -431,7 +470,10 @@ export const TRANSLATIONS = {
     report_content: 'నివేదించండి',
     submission_analytics: 'సమర్పణ విశ్లేషణ',
     rating: 'రేటింగ్',
-    quality: 'నాణ్యత',
+    sentiment_rating: 'సెంటిమెంట్ రేటింగ్',
+    text_review_quality: 'సమీక్ష నాణ్యత',
+    text_review_quality_desc: 'నాణ్యత, హేతుబద్ధత మరియు సాంకేతిక విశ్లేషణ ఆధారంగా 0 నుండి 100 వరకు స్కోర్.',
+    ai_audit_synthesis: 'ఏఐ ఆడిట్ విశ్లేషణ',
     ai_synthesized_review_output: 'ఏఐ సారాంశం',
     return_to_feed: 'ఫీడ్‌కి తిరిగి వెళ్లండి ►',
     share_audit: 'ఆడిట్ భాగస్వామ్యం చేయండి',
@@ -511,7 +553,8 @@ export const TRANSLATIONS = {
     gender_optional: 'లింగం (ఐచ్ఛికం)',
     male: 'పురుషుడు',
     female: 'స్త్రీ',
-    other: 'ఇతర',
+    other: 'బహిర్గతం చేయకూడదనుకుంటున్నారు',
+    gender_undisclosed: 'బహిర్గతం చేయకూడదనుకుంటున్నారు',
     save_profile: 'ప్రొఫైల్ సేవ్ చేయండి',
     saving: 'సేవ్ అవుతోంది...',
     select_languages_modal: 'తెలిసిన భాషలను ఎంచుకోండి',
@@ -591,8 +634,25 @@ export const TRANSLATIONS = {
     Originality: 'సృజనాత్మకత',
     Audio: 'ఆడియో',
     Direction: 'దర్శకత్వం',
-    Cinematography: 'ఛాయాగ్రహణం'
+    Cinematography: 'ఛాయాగ్రహణం',
+
+    // Subtask 3.3 & 3.4 additions
+    mandatory_fields_notice: 'ఎరుపు నక్షత్రం (*) ఉన్న ఫీల్డ్‌లు తప్పనిసరి.',
+    why_needed: '[ ఇది ఎందుకు అవసరం? ]',
+    why_needed_toggle: '[ ఇది ఎందుకు అవసరం? ]',
+    why_dob_needed: 'వయోపరిమితికి తగిన కంటెంట్ రేటింగ్‌లను (ALL, 13+, 16+, 18+) ఫిల్టర్ చేయడానికి మరియు DPDP చట్టం 2023 నిబంధనలకు లోబడి ఉండటానికి అవసరం.',
+    dob_explanation: 'వయోపరిమితికి తగిన కంటెంట్ రేటింగ్‌లను (ALL, 13+, 16+, 18+) ఫిల్టర్ చేయడానికి మరియు DPDP చట్టం 2023 నిబంధనలకు లోబడి ఉండటానికి అవసరం.',
+    address_details: 'చిరునామా వివరాలు',
+    why_address_needed: 'ప్రాంతీయ ప్రేక్షకుల ఏకాభిప్రాయాన్ని నిర్ణయించడానికి మరియు రేట్-టు-ఎర్న్ స్పాన్సర్ రివార్డుల కోసం చట్టబద్ధమైన పన్ను రిపోర్టింగ్ (TDS సెక్షన్ 194R) ప్రాసెస్ చేయడానికి అవసరం.',
+    address_explanation: 'ప్రాంతీయ ప్రేక్షకుల ఏకాభిప్రాయాన్ని నిర్ణయించడానికి మరియు రేట్-టు-ఎర్న్ స్పాన్సర్ రివార్డుల కోసం చట్టబద్ధమైన పన్ను రిపోర్టింగ్ (TDS సెక్షన్ 194R) ప్రాసెస్ చేయడానికి అవసరం.',
+    landmark: 'ల్యాండ్‌మార్క్ (ఐచ్ఛికం)',
+    landmark_optional: 'ల్యాండ్‌మార్క్ (ఐచ్ఛికం)',
+    landmark_placeholder: 'ఉదా. మెట్రో స్టేషన్ సమీపంలో / పార్క్ వెనుక',
+    account_not_found: 'ఖాతా కనుగొనబడలేదు',
+    account_not_found_desc: 'ఈ ఫోన్ నంబర్‌తో ప్రొఫైల్ నమోదు కాలేదు. మీరు కొత్త ప్రొఫైల్‌ను సృష్టించాలనుకుంటున్నారా?',
+    create_profile: 'ప్రొఫైల్ సృష్టించండి'
   },
+
   TA: {
     choose_language: 'உங்கள் மொழியைத் தேர்ந்தெடுக்கவும்',
     tab_discover: 'கண்டறிக',
@@ -602,7 +662,6 @@ export const TRANSLATIONS = {
     syncing_stream: 'ஏற்றப்படுகிறது...',
     no_content_matched: 'முடிவுகள் எதுவும் இல்லை',
     no_content_sub: 'உங்கள் தேடலுக்குப் பொருந்தக்கூடிய உள்ளடக்கம் கிடைக்கவில்லை.',
-    ai_pre_score: 'ஏஐ மதிப்பெண்',
     rate: 'மதிப்பிடு',
     consensus_draw: '0.5 ஒருமித்த டிரா',
     filter_media_types: 'ஊடக வகைகளை வடிகட்டவும்',
@@ -627,7 +686,10 @@ export const TRANSLATIONS = {
     report_content: 'புகாரளி',
     submission_analytics: 'சமர்ப்பிப்பு பகுப்பாய்வு',
     rating: 'மதிப்பீடு',
-    quality: 'தரம்',
+    sentiment_rating: 'கருத்து மதிப்பீடு',
+    text_review_quality: 'மதிப்பாய்வு தரம்',
+    text_review_quality_desc: 'கருத்து ஆழம், தர்க்கம் மற்றும் தொழில்நுட்ப விமர்சனத்தின் அடிப்படையில் 0 முதல் 100 வரை மதிப்பிடப்படுகிறது.',
+    ai_audit_synthesis: 'ஏஐ மதிப்பாய்வு பகுப்பாய்வு',
     ai_synthesized_review_output: 'ஏஐ சுருக்கம்',
     return_to_feed: 'முகப்புக்குத் திரும்பு ►',
     share_audit: 'பகிர்',
@@ -707,7 +769,8 @@ export const TRANSLATIONS = {
     gender_optional: 'பாலினம் (விருப்பமானது)',
     male: 'ஆண்',
     female: 'பெண்',
-    other: 'மற்றவை',
+    other: 'தெரிவிக்க விரும்பவில்லை',
+    gender_undisclosed: 'தெரிவிக்க விரும்பவில்லை',
     save_profile: 'சுயவிவரத்தைச் சேமி',
     saving: 'சேமிக்கப்படுகிறது...',
     select_languages_modal: 'தெரிந்த மொழிகளைத் தேர்ந்தெடுக்கவும்',
@@ -787,8 +850,25 @@ export const TRANSLATIONS = {
     Originality: 'தனித்துவம்',
     Audio: 'ஒலி',
     Direction: 'இயக்கம்',
-    Cinematography: 'ஒளிப்பதிவு'
+    Cinematography: 'ஒளிப்பதிவு',
+
+    // Subtask 3.3 & 3.4 additions
+    mandatory_fields_notice: 'சிவப்பு நட்சத்திரக் குறியிட்ட (*) புலங்கள் கட்டாயமானவை.',
+    why_needed: '[ இது ஏன் தேவைப்படுகிறது? ]',
+    why_needed_toggle: '[ இது ஏன் தேவைப்படுகிறது? ]',
+    why_dob_needed: 'வயதுக்கு ஏற்ற உள்ளடக்க மதிப்பீடுகளை (ALL, 13+, 16+, 18+) வடிகட்டவும், DPDP சட்டம் 2023-க்கு இணங்கவும் இது தேவைப்படுகிறது.',
+    dob_explanation: 'வயதுக்கு ஏற்ற உள்ளடக்க மதிப்பீடுகளை (ALL, 13+, 16+, 18+) வடிகட்டவும், DPDP சட்டம் 2023-க்கு இணங்கவும் இது தேவைப்படுகிறது.',
+    address_details: 'முகவரி விவரங்கள்',
+    why_address_needed: 'பிராந்திய பார்வையாளர்களின் ஒருமித்த கருத்தை தீர்மானிக்கவும், ரேட்-டு-எர்ன் ஸ்பான்சர் வெகுமதிகளுக்கான சட்டரீதியான வரி அறிக்கை (TDS பிரிவு 194R) செயல்முறைப்படுத்தவும் தேவைப்படுகிறது.',
+    address_explanation: 'பிராந்திய பார்வையாளர்களின் ஒருமித்த கருத்தை தீர்மானிக்கவும், ரேட்-டு-எர்ன் ஸ்பான்சர் வெகுமதிகளுக்கான சட்டரீதியான வரி அறிக்கை (TDS பிரிவு 194R) செயல்முறைப்படுத்தவும் தேவைப்படுகிறது.',
+    landmark: 'அடையாளக் குறி (விருப்பத்தேர்வு)',
+    landmark_optional: 'அடையாளக் குறி (விருப்பத்தேர்வு)',
+    landmark_placeholder: 'எ.கா. மெட்ரோ நிலையம் அருகில் / பூங்கா பின்புறம்',
+    account_not_found: 'கணக்கு கிடைக்கவில்லை',
+    account_not_found_desc: 'இந்த தொலைபேசி எண்ணில் சுயவிவரம் எதுவும் இல்லை. புதிய சுயவிவரத்தை உருவாக்க விரும்புகிறீர்களா?',
+    create_profile: 'சுயவிவரத்தை உருவாக்கவும்'
   },
+
   ES: {
     choose_language: 'Elige tu idioma',
     tab_discover: 'DESCUBRIR',
@@ -798,7 +878,6 @@ export const TRANSLATIONS = {
     syncing_stream: 'SINCRONIZANDO CONTENIDO...',
     no_content_matched: 'NO SE ENCONTRÓ CONTENIDO',
     no_content_sub: 'No se encontraron elementos que coincidan con la búsqueda.',
-    ai_pre_score: 'PRE-PUNTAJE IA',
     rate: 'CALIFICAR',
     consensus_draw: 'SORTEO DE CONSENSO 0.5',
     filter_media_types: 'FILTRAR POR FORMATO',
@@ -818,12 +897,15 @@ export const TRANSLATIONS = {
     ai_formatting_on: 'ESTADO DE FORMATO IA: ACTIVO',
     record_audio_video: 'GRABAR AUDIO/VIDEO',
     type_input_placeholder: 'Escribe tu reseña o adjunta grabación...',
-    processing_ai: 'PROCESANDO CON GEMINI IA...',
+    processing_ai: 'PROCESANDO CON IA...',
     submit_review: 'ENVIAR RESEÑA',
     report_content: 'REPORTAR CONTENIDO',
     submission_analytics: 'ANÁLISIS DE ENVÍO',
     rating: 'CALIFICACIÓN',
-    quality: 'CALIDAD',
+    sentiment_rating: 'SENTIMIENTO',
+    text_review_quality: 'CALIDAD DE LA RESEÑA',
+    text_review_quality_desc: 'Puntuado de 0 a 100 según el rigor cualitativo, razonamiento, articulación y crítica constructiva.',
+    ai_audit_synthesis: 'SÍNTESIS DE AUDITORÍA IA',
     ai_synthesized_review_output: 'RESUMEN SINTETIZADO POR IA',
     return_to_feed: 'VOLVER AL FEED ►',
     share_audit: 'COMPARTIR AUDITORÍA',
@@ -903,7 +985,8 @@ export const TRANSLATIONS = {
     gender_optional: 'GÉNERO (OPCIONAL)',
     male: 'MASCULINO',
     female: 'FEMENINO',
-    other: 'OTRO',
+    other: 'PREFIERO NO DECIRLO',
+    gender_undisclosed: 'PREFIERO NO DECIRLO',
     save_profile: 'GUARDAR PERFIL',
     saving: 'GUARDANDO...',
     select_languages_modal: 'SELECCIONAR IDIOMAS',
@@ -983,8 +1066,25 @@ export const TRANSLATIONS = {
     Originality: 'Originalidad',
     Audio: 'Sonido',
     Direction: 'Dirección',
-    Cinematography: 'Cinematografía'
+    Cinematography: 'Cinematografía',
+
+    // Subtask 3.3 & 3.4 additions
+    mandatory_fields_notice: 'Los campos marcados con un asterisco rojo (*) son obligatorios.',
+    why_needed: '[ ¿Por qué es necesario? ]',
+    why_needed_toggle: '[ ¿Por qué es necesario? ]',
+    why_dob_needed: 'Requerido para filtrar clasificaciones de contenido apropiadas para la edad (ALL, 13+, 16+, 18+) y cumplir con la Ley DPDP 2023.',
+    dob_explanation: 'Requerido para filtrar clasificaciones de contenido apropiadas para la edad (ALL, 13+, 16+, 18+) y cumplir con la Ley DPDP 2023.',
+    address_details: 'DIRECCIÓN FÍSICA',
+    why_address_needed: 'Requerido para determinar el consenso regional de la audiencia y procesar informes fiscales legales (TDS Sección 194R) para las recompensas de patrocinadores.',
+    address_explanation: 'Requerido para determinar el consenso regional de la audiencia y procesar informes fiscales legales (TDS Sección 194R) para las recompensas de patrocinadores.',
+    landmark: 'Punto de referencia (Opcional)',
+    landmark_optional: 'Punto de referencia (Opcional)',
+    landmark_placeholder: 'ej. Cerca de la estación de metro / Detrás del parque',
+    account_not_found: 'CUENTA NO ENCONTRADA',
+    account_not_found_desc: 'No hay ningún perfil registrado con este número. ¿Deseas crear un nuevo perfil ahora?',
+    create_profile: 'CREAR PERFIL'
   },
+
   FR: {
     choose_language: 'Choisissez votre langue',
     tab_discover: 'DÉCOUVRIR',
@@ -994,7 +1094,6 @@ export const TRANSLATIONS = {
     syncing_stream: 'SYNCHRONISATION DU FLUX...',
     no_content_matched: 'AUCUN CONTENU TROUVÉ',
     no_content_sub: 'Aucun contenu ne correspond à votre recherche.',
-    ai_pre_score: 'PRÉ-SCORE IA',
     rate: 'ÉVALUER',
     consensus_draw: 'TIRAGE AU SORT CONSENSUS 0.5',
     filter_media_types: 'FILTRER LES TYPES DE MÉDIA',
@@ -1014,12 +1113,15 @@ export const TRANSLATIONS = {
     ai_formatting_on: 'FORMATAGE IA: ACTIVÉ',
     record_audio_video: 'ENREGISTRER AUDIO/VIDÉO',
     type_input_placeholder: 'Rédigez votre avis ou joignez un enregistrement...',
-    processing_ai: 'TRAITEMENT PAR GEMINI IA...',
+    processing_ai: 'TRAITEMENT PAR IA...',
     submit_review: 'SOUMETTRE L\'AVIS',
     report_content: 'SIGNALER LE CONTENU',
     submission_analytics: 'ANALYSE DE LA SOUMISSION',
     rating: 'NOTE',
-    quality: 'QUALITÉ',
+    sentiment_rating: 'NOTE DE SENTIMENT',
+    text_review_quality: 'QUALITÉ DE LA CRITIQUE',
+    text_review_quality_desc: 'Noté de 0 à 100 en fonction de la substance qualitative, du raisonnement et de la critique technique.',
+    ai_audit_synthesis: 'SYNTHÈSE D\'AUDIT IA',
     ai_synthesized_review_output: 'RÉSUMÉ SYNTHÉTISÉ PAR IA',
     return_to_feed: 'RETOUR AU FLUX ►',
     share_audit: 'PARTAGER L\'AUDIT',
@@ -1099,7 +1201,8 @@ export const TRANSLATIONS = {
     gender_optional: 'GENRE (FACULTATIF)',
     male: 'HOMME',
     female: 'FEMME',
-    other: 'AUTRE',
+    other: 'NE SOUHAITE PAS PRÉCISER',
+    gender_undisclosed: 'NE SOUHAITE PAS PRÉCISER',
     save_profile: 'ENREGISTRER LE PROFIL',
     saving: 'ENREGISTREMENT...',
     select_languages_modal: 'SÉLECTIONNER LES LANGUES',
@@ -1179,7 +1282,23 @@ export const TRANSLATIONS = {
     Originality: 'Originalité',
     Audio: 'Son',
     Direction: 'Mise en scène',
-    Cinematography: 'Cinématographie'
+    Cinematography: 'Cinématographie',
+
+    // Subtask 3.3 & 3.4 additions
+    mandatory_fields_notice: 'Les champs marqués d\'un astérisque rouge (*) sont obligatoires.',
+    why_needed: '[ Pourquoi est-ce nécessaire ? ]',
+    why_needed_toggle: '[ Pourquoi est-ce nécessaire ? ]',
+    why_dob_needed: 'Requis pour filtrer les classifications de contenu selon l\'âge (ALL, 13+, 16+, 18+) et se conformer à la loi DPDP 2023.',
+    dob_explanation: 'Requis pour filtrer les classifications de contenu selon l\'âge (ALL, 13+, 16+, 18+) et se conformer à la loi DPDP 2023.',
+    address_details: 'ADRESSE PHYSIQUE',
+    why_address_needed: 'Requis pour déterminer le consensus régional du public et traiter les déclarations fiscales légales (TDS Section 194R) pour les récompenses des sponsors.',
+    address_explanation: 'Requis pour déterminer le consensus régional du public et traiter les déclarations fiscales légales (TDS Section 194R) pour les récompenses des sponsors.',
+    landmark: 'Point de repère (Optionnel)',
+    landmark_optional: 'Point de repère (Optionnel)',
+    landmark_placeholder: 'ex. Près de la station de métro / Derrière le parc',
+    account_not_found: 'COMPTE INTROUVABLE',
+    account_not_found_desc: 'Aucun profil n\'est associé à ce numéro. Souhaitez-vous créer un nouveau profil maintenant ?',
+    create_profile: 'CRÉER UN PROFIL'
   }
 };
 
@@ -1199,9 +1318,7 @@ export const LanguageProvider = ({ children }) => {
         if (stored && TRANSLATIONS[stored]) {
           setLanguageState(stored);
         }
-      } catch {
-        // Fallback to EN
-      }
+      } catch {}
     };
     loadStoredLanguage();
   }, []);
@@ -1216,9 +1333,7 @@ export const LanguageProvider = ({ children }) => {
         if (token) {
           mobileApi.patch('/users/me', { languagePreferred: upper }).catch(() => {});
         }
-      } catch {
-        // Ignored
-      }
+      } catch {}
     }
   };
 

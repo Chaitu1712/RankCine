@@ -15,12 +15,13 @@ import {
   Platform 
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Feather } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
 import YoutubePlayer from 'react-native-youtube-iframe';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import * as ScreenOrientation from 'expo-screen-orientation';
-import { COLORS } from '../constants/theme';
+import { COLORS, useTheme } from '../constants/theme';
 import { mobileApi, resolveMediaUrl, getYouTubeInfo } from '../services/mobileApi';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -35,12 +36,9 @@ const YouTubePlayerView = ({ videoId, height, onFullscreen }) => (
   </View>
 );
 
-// TASK 4.1: Native Audio Player for Songs & Podcasts
 const NativeAudioPlayer = ({ url, title, height }) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const player = useVideoPlayer(url, (p) => {
-    p.loop = false;
-  });
+  const player = useVideoPlayer(url, (p) => { p.loop = false; });
 
   useEffect(() => {
     const sub = player.addListener('playingChange', (event) => {
@@ -49,20 +47,13 @@ const NativeAudioPlayer = ({ url, title, height }) => {
 
     return () => {
       sub.remove();
-      try {
-        player.pause();
-      } catch {
-        // Ignored on teardown
-      }
+      try { player.pause(); } catch {}
     };
   }, [player]);
 
   const togglePlay = () => {
-    if (isPlaying) {
-      player.pause();
-    } else {
-      player.play();
-    }
+    if (isPlaying) player.pause();
+    else player.play();
   };
 
   return (
@@ -112,6 +103,7 @@ const NativeSlider = ({ label, initialValue, onFinalChange }) => {
 
 export default function RateContentScreen({ route, navigation }) {
   const { t, language } = useLanguage();
+  const { theme, highContrast } = useTheme();
   const { item } = route.params || { item: null };
   const { width } = useWindowDimensions();
   
@@ -127,6 +119,28 @@ export default function RateContentScreen({ route, navigation }) {
   const [loadingParams, setLoadingParams] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageModalVisible, setImageModalVisible] = useState(false);
+
+  // Subtask 3.1: Preference for AI narrative formatting
+  const [aiFormattingEnabled, setAiFormattingEnabled] = useState(true);
+
+  // Subtask 3.2: Review scheduling bounds check
+  const now = new Date();
+  const isUpcoming = item?.reviewStartDate && now < new Date(item.reviewStartDate);
+  const isConcluded = item?.reviewEndDate && now > new Date(item.reviewEndDate);
+  const isWindowLocked = isUpcoming || isConcluded;
+
+  useEffect(() => {
+    const loadPreferences = async () => {
+      try {
+        const storedAI = await AsyncStorage.getItem('rankcine_ai_formatting_enabled');
+        if (storedAI !== null) {
+          setAiFormattingEnabled(storedAI === 'true');
+        }
+      } catch (err) {}
+    };
+
+    loadPreferences();
+  }, []);
 
   useEffect(() => {
     if (!item?.id) return;
@@ -190,6 +204,14 @@ export default function RateContentScreen({ route, navigation }) {
   const handleSubmit = async () => {
     if (!item?.id) return;
 
+    if (isWindowLocked) {
+      Alert.alert('Window Closed', isUpcoming 
+        ? `Reviewing opens on ${new Date(item.reviewStartDate).toLocaleString()}.` 
+        : 'The review window for this asset has concluded.'
+      );
+      return;
+    }
+
     const parameterScores = Object.keys(scores).map(key => ({
       parameterId: key,
       score: scores[key]
@@ -215,6 +237,11 @@ export default function RateContentScreen({ route, navigation }) {
       formData.append('rawTextInput', reviewDraft.feedback);
       formData.append('parameterScores', JSON.stringify(parameterScores));
 
+      // Subtask 3.1: Pass skipFormatting if user disabled AI formatting in Settings
+      if (!aiFormattingEnabled) {
+        formData.append('skipFormatting', 'true');
+      }
+
       const res = await mobileApi.upload('/reviews/submit', formData);
       navigation.replace('ReviewSubmitted', { reviewData: res });
 
@@ -225,7 +252,6 @@ export default function RateContentScreen({ route, navigation }) {
     }
   };
 
-  // TASK 4.1: Render active player based on asset media type
   const renderActivePlayer = () => {
     const type = (item?.mediaType || '').toUpperCase();
     const mediaUrl = resolveMediaUrl(item?.contentUrl);
@@ -234,7 +260,7 @@ export default function RateContentScreen({ route, navigation }) {
     if (type === 'POSTER' && mediaUrl) {
       return (
         <TouchableOpacity style={[styles.playerMedia, { height: videoHeight }]} onPress={() => setImageModalVisible(true)} activeOpacity={0.9}>
-          <Image source={{ uri: mediaUrl }} style={[styles.playerMedia, {height: videoHeight}]} resizeMode="contain" />
+          <Image source={{ uri: mediaUrl }} style={{ width: '100%', height: '100%' }} resizeMode="contain" />
           <View style={styles.expandIcon}><Feather name="maximize-2" size={16} color="white" /></View>
         </TouchableOpacity>
       );
@@ -255,8 +281,8 @@ export default function RateContentScreen({ route, navigation }) {
 
   if (checkingPrevious) {
     return (
-      <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
+      <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center', backgroundColor: theme.background }]}>
+        <ActivityIndicator size="large" color={theme.primary} />
         <Text style={styles.checkingText}>{t('verifying_audit')}</Text>
       </SafeAreaView>
     );
@@ -264,20 +290,20 @@ export default function RateContentScreen({ route, navigation }) {
 
   if (!item) {
     return (
-      <SafeAreaView style={styles.container}>
-        <Text style={{ padding: 24, textAlign: 'center' }}>No media item selected.</Text>
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+        <Text style={{ padding: 24, textAlign: 'center', color: theme.primary }}>No media item selected.</Text>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.headerRow}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <View style={[styles.headerRow, { borderBottomColor: theme.borderLight, backgroundColor: theme.surface }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} disabled={isSubmitting}>
-          <Feather name="arrow-left" size={20} color="black" />
+          <Feather name="arrow-left" size={20} color={theme.primary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('rate_content')}</Text>
-        <Feather name="more-vertical" size={20} color="black" />
+        <Text style={[styles.headerTitle, { color: theme.primary }]}>{t('rate_content')}</Text>
+        <Feather name="more-vertical" size={20} color={theme.primary} />
       </View>
 
       <KeyboardAvoidingView 
@@ -288,14 +314,32 @@ export default function RateContentScreen({ route, navigation }) {
         <ScrollView contentContainerStyle={{ alignItems: 'center', flexGrow: 1 }} keyboardShouldPersistTaps="handled">
           <View style={{ width: '100%', maxWidth: contentMaxWidth, padding: 24 }}>
             
-            <View style={[styles.playerCanvas, { height: videoHeight }]}>
+            <View style={[styles.playerCanvas, { height: videoHeight, borderColor: theme.primary, borderWidth: highContrast ? 2 : 1 }]}>
               {renderActivePlayer()}
             </View>
 
-            <Text style={styles.sectionHeader}>{t('parameters')}</Text>
+            {/* Subtask 3.2: Review Window Scheduling Banner */}
+            {isWindowLocked && (
+              <View style={styles.lockedBanner}>
+                <Feather name="lock" size={14} color="#ffffff" style={{ marginTop: 1 }} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.lockedTitle}>
+                    {isUpcoming ? 'AUDIT WINDOW OPENS SOON' : 'AUDIT WINDOW CONCLUDED'}
+                  </Text>
+                  <Text style={styles.lockedText}>
+                    {isUpcoming 
+                      ? `Evaluations for this asset open on ${new Date(item.reviewStartDate).toLocaleString()}. Preview canvas only.`
+                      : `The community review deadline for this asset passed on ${new Date(item.reviewEndDate).toLocaleString()}.`
+                    }
+                  </Text>
+                </View>
+              </View>
+            )}
+
+            <Text style={[styles.sectionHeader, { borderBottomColor: theme.primary, color: theme.primary }]}>{t('parameters')}</Text>
 
             {loadingParams ? (
-              <ActivityIndicator size="small" color={COLORS.primary} style={{ marginBottom: 24 }} />
+              <ActivityIndicator size="small" color={theme.primary} style={{ marginBottom: 24 }} />
             ) : (
               <View style={styles.slidersBlock}>
                 {paramsList.length > 0 ? paramsList.map((param) => {
@@ -316,10 +360,12 @@ export default function RateContentScreen({ route, navigation }) {
               </View>
             )}
 
-            {/* TASK 4.3: Polished Text Audit Engine Canvas */}
-            <View style={styles.inputContainer}>
+            {/* Polished Text Audit Engine Canvas */}
+            <View style={[styles.inputContainer, { borderColor: theme.primary, borderWidth: highContrast ? 2 : 1 }]}>
               <View style={styles.statusRow}>
-                <Text style={styles.statusLabel}>{t('ai_formatting_on')}</Text>
+                <Text style={[styles.statusLabel, { color: theme.primary }]}>
+                  {aiFormattingEnabled ? t('ai_formatting_on') : 'AI FORMATTING: OFF (RAW CRITIQUE MODE)'}
+                </Text>
                 <Text style={styles.modeLabel}>TEXT AUDIT ENGINE</Text>
               </View>
 
@@ -330,21 +376,33 @@ export default function RateContentScreen({ route, navigation }) {
                 onChangeText={setFeedback}
                 placeholder="Provide qualitative critique across pacing, visual tone, or acoustic composition..."
                 placeholderTextColor={COLORS.textMuted}
-                style={styles.textInput}
-                editable={!isSubmitting}
+                style={[styles.textInput, { color: theme.primary }]}
+                editable={!isSubmitting && !isWindowLocked}
               />
             </View>
 
-            <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} disabled={isSubmitting}>
+            <TouchableOpacity 
+              style={[
+                styles.submitButton, 
+                { borderColor: theme.primary },
+                isWindowLocked && styles.submitButtonDisabled
+              ]} 
+              onPress={handleSubmit} 
+              disabled={isSubmitting || isWindowLocked}
+            >
               {isSubmitting ? (
                 <>
-                  <ActivityIndicator size="small" color={COLORS.primary} />
-                  <Text style={styles.submitButtonText}>{t('processing_ai')}</Text>
+                  <ActivityIndicator size="small" color={theme.primary} />
+                  <Text style={[styles.submitButtonText, { color: theme.primary }]}>{t('processing_ai')}</Text>
                 </>
+              ) : isWindowLocked ? (
+                <Text style={[styles.submitButtonText, { color: '#888888' }]}>
+                  {isUpcoming ? 'OPENS SOON' : 'AUDIT CONCLUDED'}
+                </Text>
               ) : (
                 <>
-                  <Text style={styles.submitButtonText}>{t('submit_review')}</Text>
-                  <Feather name="arrow-right" size={16} color={COLORS.primary} />
+                  <Text style={[styles.submitButtonText, { color: theme.primary }]}>{t('submit_review')}</Text>
+                  <Feather name="arrow-right" size={16} color={theme.primary} />
                 </>
               )}
             </TouchableOpacity>
@@ -399,7 +457,10 @@ const styles = StyleSheet.create({
   fallbackPlayer: { width: '100%', justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.containerHigh },
   canvasText: { fontSize: 12, fontWeight: 'bold', color: COLORS.textSecondary },
 
-  // Audio Player Styles
+  lockedBanner: { flexDirection: 'row', gap: 10, backgroundColor: '#000000', padding: 14, marginBottom: 20 },
+  lockedTitle: { fontSize: 9, fontWeight: '900', color: '#ffffff', letterSpacing: 0.5, marginBottom: 2 },
+  lockedText: { fontSize: 9, color: '#e0e0e0', lineHeight: 14 },
+
   audioContainer: { width: '100%', backgroundColor: '#111111', justifyContent: 'center', alignItems: 'center', padding: 20 },
   audioIconWrapper: { width: 64, height: 64, borderWidth: 1, borderColor: '#333333', backgroundColor: '#000000', justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
   audioTitleText: { fontSize: 14, fontWeight: '900', color: '#ffffff', letterSpacing: 0.5, marginBottom: 2, textAlign: 'center' },
@@ -420,6 +481,7 @@ const styles = StyleSheet.create({
   modeLabel: { fontSize: 8, fontWeight: '900', color: COLORS.textSecondary, letterSpacing: 0.5 },
   textInput: { fontSize: 12, color: COLORS.primary, height: 100, textAlignVertical: 'top' },
   submitButton: { backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.primary, paddingVertical: 14, alignItems: 'center', marginBottom: 12, flexDirection: 'row', justifyContent: 'center', gap: 8 },
+  submitButtonDisabled: { backgroundColor: '#f0f0f0', borderColor: '#d0d0d0' },
   submitButtonText: { color: COLORS.primary, fontSize: 12, fontWeight: '900' },
   reportButton: { backgroundColor: COLORS.danger, paddingVertical: 14, alignItems: 'center', borderWidth: 1, borderColor: COLORS.primary, flexDirection: 'row', justifyContent: 'center', gap: 8 },
   reportText: { fontSize: 12, fontWeight: '900', color: COLORS.surface },

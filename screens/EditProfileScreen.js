@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { COLORS } from '../constants/theme';
 import { mobileApi } from '../services/mobileApi';
+import { useLanguage } from '../context/LanguageContext';
 
 const MONTHS = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
 const DAYS = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
@@ -81,18 +82,24 @@ const BlueprintPicker = ({ placeholder, options, value, onSelect }) => {
 };
 
 export default function EditProfileScreen({ navigation }) {
+  const { t } = useLanguage();
   const [isDirty, setIsDirty] = useState(false);
   const [showWarningModal, setShowWarningModal] = useState(false);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  // Subtask 3.4: Accordion toggle states
+  const [showDobWhy, setShowDobWhy] = useState(false);
+  const [showAddressWhy, setShowAddressWhy] = useState(false);
+
   const [selectedLanguages, setSelectedLanguages] = useState(['EN']);
 
+  // Subtask 3.4: Added landmark to state
   const [form, setForm] = useState({
     fullName: '', phone: '', email: '', 
     month: '', day: '', year: '', 
-    street: '', addressLine2: '', city: '', state: '', country: 'India', 
+    street: '', addressLine2: '', landmark: '', city: '', state: '', country: 'India', 
     gender: ''
   });
 
@@ -142,13 +149,14 @@ export default function EditProfileScreen({ navigation }) {
         setForm({
           fullName: data.profile?.fullName || '',
           email: data.email || '',
-          phone: data.id || '', 
+          phone: data.phone || data.id || '', 
           gender: data.profile?.gender || '',
           month: monthVal,
           day: dayVal,
           year: yearVal,
           street: data.profile?.address?.street || '',
           addressLine2: data.profile?.address?.line2 || '',
+          landmark: data.profile?.address?.landmark || '',
           city: data.profile?.address?.city || '',
           state: data.profile?.address?.state || '',
           country: data.profile?.address?.country || 'India'
@@ -194,6 +202,7 @@ export default function EditProfileScreen({ navigation }) {
         address: {
           street: form.street.trim(),
           line2: form.addressLine2.trim() || undefined,
+          landmark: form.landmark.trim() || undefined,
           city: form.city.trim(),
           state: form.state.trim(),
           country: form.country.trim()
@@ -201,7 +210,7 @@ export default function EditProfileScreen({ navigation }) {
       });
 
       setIsDirty(false);
-      Alert.alert('Success', 'Profile metadata updated.');
+      Alert.alert('Success', 'Profile details updated.');
       navigation.goBack();
     } catch (err) {
       Alert.alert('Error', err.message || 'Failed to update profile.');
@@ -224,13 +233,15 @@ export default function EditProfileScreen({ navigation }) {
         <TouchableOpacity onPress={handleHeaderBack}>
           <Feather name="arrow-left" size={20} color={COLORS.primary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>EDIT PROFILE</Text>
+        <Text style={styles.headerTitle}>{t('edit_profile') || 'EDIT PROFILE'}</Text>
         <View style={{ width: 20 }} />
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
         
-        <Text style={styles.label}>FULL NAME</Text>
+        <Text style={styles.label}>
+          {t('full_name') || 'FULL NAME'} <Text style={{ color: COLORS.danger }}>*</Text>
+        </Text>
         <TextInput 
           style={styles.input} 
           placeholder="Enter full name" 
@@ -239,19 +250,35 @@ export default function EditProfileScreen({ navigation }) {
           onChangeText={(v) => handleInput('fullName', v)} 
         />
 
-        <Text style={styles.label}>PHONE NUMBER</Text>
+        <Text style={styles.label}>{t('phone_number') || 'PHONE NUMBER'}</Text>
         <View style={styles.row}>
           <TextInput style={[styles.input, { flex: 1, marginBottom: 0 }]} editable={false} value={form.phone} />
-          <TouchableOpacity style={styles.otpBtn}><Text style={styles.otpBtnText}>VERIFIED</Text></TouchableOpacity>
+          <View style={styles.otpBtn}><Text style={styles.otpBtnText}>VERIFIED</Text></View>
         </View>
 
-        <Text style={styles.label}>EMAIL</Text>
+        <Text style={styles.label}>{t('email') || 'EMAIL'}</Text>
         <View style={styles.row}>
           <TextInput style={[styles.input, { flex: 1, marginBottom: 0 }]} editable={false} value={form.email} />
-          <TouchableOpacity style={styles.otpBtn}><Text style={styles.otpBtnText}>VERIFIED</Text></TouchableOpacity>
+          <View style={styles.otpBtn}><Text style={styles.otpBtnText}>VERIFIED</Text></View>
         </View>
 
-        <Text style={styles.label}>DATE OF BIRTH</Text>
+        {/* Date of Birth with Accordion */}
+        <View style={styles.sectionHeaderRow}>
+          <Text style={styles.label}>{t('date_of_birth') || 'DATE OF BIRTH'}</Text>
+          <TouchableOpacity onPress={() => setShowDobWhy(!showDobWhy)} style={styles.whyToggle}>
+            <Feather name="help-circle" size={11} color="#5e5e5e" />
+            <Text style={styles.whyToggleText}>{t('why_needed') || '[ Why is this needed? ]'}</Text>
+          </TouchableOpacity>
+        </View>
+
+        {showDobWhy && (
+          <View style={styles.whyCard}>
+            <Text style={styles.whyCardText}>
+              {t('dob_explanation') || 'Required to enforce content age ratings (ALL, 13+, 16+, 18+) and comply with statutory verification under the Digital Personal Data Protection (DPDP) Act 2023.'}
+            </Text>
+          </View>
+        )}
+
         <View style={styles.dobRow}>
           <View style={{ flex: 1.2 }}>
             <Text style={styles.subLabel}>MONTH</Text>
@@ -267,43 +294,65 @@ export default function EditProfileScreen({ navigation }) {
           </View>
         </View>
 
-        <Text style={styles.label}>COUNTRY</Text>
-        <BlueprintPicker 
-          placeholder="Select Country" 
-          options={COUNTRIES} 
-          value={form.country} 
-          onSelect={(c) => { handleInput('country', c); handleInput('state', ''); }} 
-        />
-
-        <View style={styles.dobRow}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.label}>STATE / PROVINCE</Text>
-            <BlueprintPicker 
-              placeholder="Select State" 
-              options={availableStates} 
-              value={form.state} 
-              onSelect={(s) => handleInput('state', s)} 
-            />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.label}>CITY</Text>
-            <TextInput style={styles.input} placeholder="City" placeholderTextColor={COLORS.textMuted} value={form.city} onChangeText={(v) => handleInput('city', v)}/>
-          </View>
+        {/* Structured Address Card with Accordion and Landmark */}
+        <View style={styles.sectionHeaderRow}>
+          <Text style={styles.label}>{t('address_details') || 'PHYSICAL ADDRESS'}</Text>
+          <TouchableOpacity onPress={() => setShowAddressWhy(!showAddressWhy)} style={styles.whyToggle}>
+            <Feather name="help-circle" size={11} color="#5e5e5e" />
+            <Text style={styles.whyToggleText}>{t('why_needed') || '[ Why is this needed? ]'}</Text>
+          </TouchableOpacity>
         </View>
 
-        <Text style={styles.label}>STREET ADDRESS</Text>
-        <TextInput style={styles.input} placeholder="Street address" placeholderTextColor={COLORS.textMuted} value={form.street} onChangeText={(v) => handleInput('street', v)}/>
+        {showAddressWhy && (
+          <View style={styles.whyCard}>
+            <Text style={styles.whyCardText}>
+              {t('address_explanation') || 'Required for regional audience consensus modeling and statutory compliance (TDS Section 194R under the Income Tax Act) when issuing Rate-to-Earn sponsor vouchers.'}
+            </Text>
+          </View>
+        )}
 
-        <Text style={styles.label}>ADDRESS LINE 2 (OPTIONAL)</Text>
-        <TextInput style={styles.input} placeholder="Apt, Suite, Unit" placeholderTextColor={COLORS.textMuted} value={form.addressLine2} onChangeText={(v) => handleInput('addressLine2', v)}/>
+        <View style={styles.structuredAddressCard}>
+          <Text style={styles.subLabel}>{t('country') || 'COUNTRY'}</Text>
+          <BlueprintPicker 
+            placeholder="Select Country" 
+            options={COUNTRIES} 
+            value={form.country} 
+            onSelect={(c) => { handleInput('country', c); handleInput('state', ''); }} 
+          />
 
-        <Text style={styles.label}>LANGUAGES KNOWN</Text>
+          <View style={styles.multiRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.subLabel}>{t('state_province') || 'STATE / PROVINCE'}</Text>
+              <BlueprintPicker 
+                placeholder="Select State" 
+                options={availableStates} 
+                value={form.state} 
+                onSelect={(s) => handleInput('state', s)} 
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.subLabel}>{t('city') || 'CITY'}</Text>
+              <TextInput style={styles.input} placeholder="City" placeholderTextColor={COLORS.textMuted} value={form.city} onChangeText={(v) => handleInput('city', v)}/>
+            </View>
+          </View>
+
+          <Text style={styles.subLabel}>{t('street_address') || 'STREET ADDRESS'}</Text>
+          <TextInput style={styles.input} placeholder="Street address" placeholderTextColor={COLORS.textMuted} value={form.street} onChangeText={(v) => handleInput('street', v)}/>
+
+          <Text style={styles.subLabel}>{t('address_line_2') || 'ADDRESS LINE 2 (OPTIONAL)'}</Text>
+          <TextInput style={styles.input} placeholder="Apt, Suite, Unit" placeholderTextColor={COLORS.textMuted} value={form.addressLine2} onChangeText={(v) => handleInput('addressLine2', v)}/>
+
+          <Text style={styles.subLabel}>{t('landmark_optional') || 'LANDMARK (OPTIONAL)'}</Text>
+          <TextInput style={styles.input} placeholder="Near landmark or prominent building" placeholderTextColor={COLORS.textMuted} value={form.landmark} onChangeText={(v) => handleInput('landmark', v)}/>
+        </View>
+
+        <Text style={styles.label}>{t('languages_known') || 'LANGUAGES KNOWN'}</Text>
         <TouchableOpacity 
           style={styles.selectLanguageBox} 
           onPress={() => setShowLanguageModal(true)}
           activeOpacity={0.8}
         >
-          <Text style={styles.selectLanguageText}>Select More Language</Text>
+          <Text style={styles.selectLanguageText}>Select Language</Text>
           <Feather name="chevron-down" size={16} color={COLORS.primary} />
         </TouchableOpacity>
 
@@ -319,18 +368,25 @@ export default function EditProfileScreen({ navigation }) {
           ))}
         </View>
 
-        <Text style={styles.label}>GENDER (OPTIONAL)</Text>
+        {/* Subtask 3.4: "Doesn't want to disclose" Gender */}
+        <Text style={styles.label}>{t('gender_optional') || 'GENDER (OPTIONAL)'}</Text>
         <View style={styles.genderBox}>
           <TouchableOpacity onPress={() => handleInput('gender', 'MALE')}>
-            <Text style={[styles.genderText, form.gender === 'MALE' && { fontWeight: '900', color: COLORS.primary }]}>MALE</Text>
+            <Text style={[styles.genderText, form.gender === 'MALE' && { fontWeight: '900', color: COLORS.primary }]}>
+              {t('male') || 'MALE'}
+            </Text>
           </TouchableOpacity>
           <View style={styles.divider} />
           <TouchableOpacity onPress={() => handleInput('gender', 'FEMALE')}>
-            <Text style={[styles.genderText, form.gender === 'FEMALE' && { fontWeight: '900', color: COLORS.primary }]}>FEMALE</Text>
+            <Text style={[styles.genderText, form.gender === 'FEMALE' && { fontWeight: '900', color: COLORS.primary }]}>
+              {t('female') || 'FEMALE'}
+            </Text>
           </TouchableOpacity>
           <View style={styles.divider} />
-          <TouchableOpacity onPress={() => handleInput('gender', 'OTHER')}>
-            <Text style={[styles.genderText, form.gender === 'OTHER' && { fontWeight: '900', color: COLORS.primary }]}>OTHER</Text>
+          <TouchableOpacity onPress={() => handleInput('gender', 'PREFER_NOT_TO_DISCLOSE')}>
+            <Text style={[styles.genderText, form.gender === 'PREFER_NOT_TO_DISCLOSE' && { fontWeight: '900', color: COLORS.primary }]}>
+              {t('gender_undisclosed') || "DOESN'T WANT TO DISCLOSE"}
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -404,15 +460,22 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: COLORS.borderLight, backgroundColor: COLORS.surface },
   headerTitle: { fontSize: 13, fontWeight: '900', color: COLORS.primary },
-  
   label: { fontSize: 9, fontWeight: '900', marginBottom: 6, marginTop: 14, textTransform: 'uppercase', color: COLORS.textSecondary, letterSpacing: 0.5 },
-  subLabel: { fontSize: 8, fontWeight: '900', marginBottom: 4, textAlign: 'center', color: COLORS.textSecondary, letterSpacing: 0.5 },
-  input: { borderWidth: 1, borderColor: COLORS.primary, backgroundColor: COLORS.surface, padding: 12, fontSize: 12, fontWeight: 'bold', color: COLORS.primary, marginBottom: 4 },
+  subLabel: { fontSize: 8, fontWeight: '900', marginBottom: 4, color: COLORS.textSecondary, letterSpacing: 0.5 },
+  input: { borderWidth: 1, borderColor: COLORS.primary, backgroundColor: COLORS.surface, padding: 12, fontSize: 12, fontWeight: 'bold', color: COLORS.primary, marginBottom: 6 },
   row: { flexDirection: 'row', gap: 8, alignItems: 'stretch' },
   otpBtn: { borderWidth: 1, borderColor: COLORS.borderLight, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 12, backgroundColor: COLORS.containerLow },
   otpBtnText: { fontSize: 9, fontWeight: '900', textAlign: 'center', color: COLORS.textMuted },
   dobRow: { flexDirection: 'row', gap: 8, marginBottom: 4 },
+  multiRow: { flexDirection: 'row', gap: 10 },
   
+  sectionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 14, marginBottom: 6 },
+  whyToggle: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  whyToggleText: { fontSize: 9, color: '#5e5e5e', fontWeight: 'bold' },
+  whyCard: { backgroundColor: '#f3f3f4', borderWidth: 1, borderColor: '#c6c6c6', padding: 10, marginBottom: 8 },
+  whyCardText: { fontSize: 9, color: '#474747', lineHeight: 14 },
+  structuredAddressCard: { borderWidth: 1, borderColor: '#c6c6c6', backgroundColor: '#fafafa', padding: 14, marginBottom: 10 },
+
   pickerBtn: { borderWidth: 1, borderColor: COLORS.primary, padding: 12, backgroundColor: COLORS.surface, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
   pickerBtnText: { fontSize: 11, fontWeight: 'bold', color: COLORS.primary },
   

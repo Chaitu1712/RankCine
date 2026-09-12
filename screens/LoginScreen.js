@@ -9,19 +9,33 @@ import LegalModal from '../components/LegalModal';
 import { useLanguage } from '../context/LanguageContext';
 
 const COUNTRY_DIAL_CODES = [
-  { country: 'India', code: '+91', iso: 'IN' },
-  { country: 'United States', code: '+1', iso: 'US' },
-  { country: 'United Kingdom', code: '+44', iso: 'GB' },
-  { country: 'Australia', code: '+61', iso: 'AU' },
-  { country: 'United Arab Emirates', code: '+971', iso: 'AE' },
-  { country: 'Germany', code: '+49', iso: 'DE' },
-  { country: 'France', code: '+33', iso: 'FR' },
-  { country: 'Singapore', code: '+65', iso: 'SG' },
-  { country: 'Japan', code: '+81', iso: 'JP' },
-  { country: 'South Korea', code: '+82', iso: 'KR' },
-  { country: 'Spain', code: '+34', iso: 'ES' },
-  { country: 'Saudi Arabia', code: '+966', iso: 'SA' }
+  { country: 'India', code: '+91', iso: 'IN', placeholder: 'e.g. 98765 43210' },
+  { country: 'United States', code: '+1', iso: 'US', placeholder: 'e.g. 555-019-2834' },
+  { country: 'United Kingdom', code: '+44', iso: 'GB', placeholder: 'e.g. 7911 123456' },
+  { country: 'Australia', code: '+61', iso: 'AU', placeholder: 'e.g. 412 345 678' },
+  { country: 'United Arab Emirates', code: '+971', iso: 'AE', placeholder: 'e.g. 50 123 4567' },
+  { country: 'Germany', code: '+49', iso: 'DE', placeholder: 'e.g. 151 23456789' },
+  { country: 'France', code: '+33', iso: 'FR', placeholder: 'e.g. 6 12 34 56 78' },
+  { country: 'Singapore', code: '+65', iso: 'SG', placeholder: 'e.g. 9123 4567' },
+  { country: 'Japan', code: '+81', iso: 'JP', placeholder: 'e.g. 90 1234 5678' },
+  { country: 'South Korea', code: '+82', iso: 'KR', placeholder: 'e.g. 10 1234 5678' },
+  { country: 'Spain', code: '+34', iso: 'ES', placeholder: 'e.g. 612 34 56 78' },
+  { country: 'Saudi Arabia', code: '+966', iso: 'SA', placeholder: 'e.g. 50 123 4567' }
 ];
+
+const formatPhoneDigits = (rawText, dialCode) => {
+  const digits = rawText.replace(/\D/g, '');
+  if (dialCode === '+1') {
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+    return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+  }
+  if (dialCode === '+91') {
+    if (digits.length <= 5) return digits;
+    return `${digits.slice(0, 5)} ${digits.slice(5, 10)}`;
+  }
+  return digits;
+};
 
 export default function LoginScreen({ route, navigation }) {
   const { t } = useLanguage();
@@ -36,14 +50,24 @@ export default function LoginScreen({ route, navigation }) {
   const [loading, setLoading] = useState(false);
   const [sendingOtp, setSendingOtp] = useState(false);
 
-  // Stores the Firebase confirmation session object
+  // Subtask 3.3: 404 Account Not Found Modal State
+  const [showNotFoundModal, setShowNotFoundModal] = useState(false);
+  const [notFoundPhone, setNotFoundPhone] = useState('');
+
   const [confirmationResult, setConfirmationResult] = useState(null);
 
-  const getFormattedPhone = () => {
-    return `${selectedDialCode}${phoneInput.trim()}`.replace(/\s+/g, '');
+  const selectedCountryObj = COUNTRY_DIAL_CODES.find(c => c.code === selectedDialCode) || COUNTRY_DIAL_CODES[0];
+
+  const getCleanPhone = () => {
+    const cleanDigits = phoneInput.replace(/\D/g, '');
+    return `${selectedDialCode}${cleanDigits}`;
   };
 
-  // Step 1: Request SMS verification code through native Firebase
+  const handlePhoneTextChange = (text) => {
+    const formatted = formatPhoneDigits(text, selectedDialCode);
+    setPhoneInput(formatted);
+  };
+
   const handleSendOtp = async () => {
     if (!phoneInput.trim()) {
       Alert.alert('Required', 'Please enter your mobile phone number.');
@@ -52,7 +76,7 @@ export default function LoginScreen({ route, navigation }) {
 
     try {
       setSendingOtp(true);
-      const fullPhone = getFormattedPhone();
+      const fullPhone = getCleanPhone();
       
       const confirmation = await sendPhoneOtp(fullPhone);
       setConfirmationResult(confirmation);
@@ -66,7 +90,6 @@ export default function LoginScreen({ route, navigation }) {
     }
   };
 
-  // Step 2: Confirm OTP with Firebase, obtain ID Token, authenticate with Backend
   const handleLogin = async () => {
     if (!acceptedTerms) {
       Alert.alert('Terms Required', 'You must accept the Terms of Service & Privacy Policy to continue.');
@@ -90,13 +113,10 @@ export default function LoginScreen({ route, navigation }) {
 
     try {
       setLoading(true);
+      const fullPhone = getCleanPhone();
 
-      const fullPhone = getFormattedPhone();
-
-      // 1. Verify OTP with Firebase and receive signed JWT
       const { idToken } = await confirmPhoneOtp(confirmationResult, otp);
 
-      // 2. Exchange Firebase Token for RankCine User Session on Backend
       const res = await mobileApi.post('/auth/otp/verify', {
         phoneNumber: fullPhone,
         firebaseIdToken: idToken,
@@ -104,7 +124,6 @@ export default function LoginScreen({ route, navigation }) {
 
       await mobileApi.setAuth(res.token, res);
 
-      // 3. JIT submission if user evaluated prior to login
       if (pendingReview && pendingReview.item?.id) {
         try {
           const formData = new FormData();
@@ -123,6 +142,14 @@ export default function LoginScreen({ route, navigation }) {
       navigation.replace('Main');
     } catch (err) {
       console.error('Login Failed:', err);
+
+      // Subtask 3.3: Intercept 404 USER_NOT_FOUND
+      if (err.status === 404 || err.code === 'USER_NOT_FOUND' || err.message?.includes('not found')) {
+        setNotFoundPhone(getCleanPhone());
+        setShowNotFoundModal(true);
+        return;
+      }
+
       Alert.alert('Authentication Failed', err.message || 'Invalid verification code or account error.');
     } finally {
       setLoading(false);
@@ -159,11 +186,11 @@ export default function LoginScreen({ route, navigation }) {
 
             <TextInput 
               style={styles.phoneInput} 
-              placeholder="9876543210" 
+              placeholder={selectedCountryObj.placeholder} 
               placeholderTextColor={COLORS.textMuted}
               keyboardType="phone-pad"
               value={phoneInput}
-              onChangeText={setPhoneInput}
+              onChangeText={handlePhoneTextChange}
             />
 
             <TouchableOpacity style={styles.otpBtn} onPress={handleSendOtp} disabled={sendingOtp}>
@@ -212,13 +239,50 @@ export default function LoginScreen({ route, navigation }) {
 
         <TouchableOpacity 
           style={styles.registerLink} 
-          onPress={() => navigation.navigate('Register', { pendingReview })}
+          onPress={() => navigation.navigate('Register', { pendingReview, prefilledPhone: getCleanPhone() })}
         >
           <Text style={styles.registerText}>{t('new_user_register') || 'New consumer? Create an account here.'}</Text>
         </TouchableOpacity>
       </ScrollView>
 
-      {/* COUNTRY DIAL CODE MODAL */}
+      {/* Subtask 3.3: Non-Existent User Modal */}
+      {showNotFoundModal && (
+        <Modal visible={true} transparent={true} animationType="fade">
+          <View style={styles.modalOverlay}>
+            <View style={styles.notFoundCard}>
+              <View style={styles.notFoundIconBox}>
+                <Feather name="user-x" size={24} color="#ffffff" />
+              </View>
+
+              <Text style={styles.notFoundTitle}>ACCOUNT NOT FOUND</Text>
+              <Text style={styles.notFoundBody}>
+                No consumer profile is registered under <Text style={{ fontWeight: '900', color: '#000000' }}>{notFoundPhone}</Text>. Would you like to create a new profile now?
+              </Text>
+
+              <View style={styles.notFoundActions}>
+                <TouchableOpacity 
+                  style={styles.notFoundCancelBtn}
+                  onPress={() => setShowNotFoundModal(false)}
+                >
+                  <Text style={styles.notFoundCancelText}>CANCEL</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  style={styles.notFoundConfirmBtn}
+                  onPress={() => {
+                    setShowNotFoundModal(false);
+                    navigation.navigate('Register', { pendingReview, prefilledPhone: notFoundPhone });
+                  }}
+                >
+                  <Text style={styles.notFoundConfirmText}>CREATE PROFILE ►</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      )}
+
+      {/* Country Dial Code Modal */}
       <Modal visible={showDialModal} transparent={true} animationType="fade">
         <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowDialModal(false)}>
           <View style={styles.modalCard}>
@@ -285,5 +349,15 @@ const styles = StyleSheet.create({
   modalTitle: { fontSize: 11, fontWeight: '900', letterSpacing: 0.5 },
   dialOption: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f3f3f4' },
   dialCountryText: { fontSize: 11, fontWeight: 'bold', color: '#000000' },
-  dialCodeNumber: { fontSize: 11, fontMono: true, fontWeight: 'bold', color: '#5e5e5e' }
+  dialCodeNumber: { fontSize: 11, fontMono: true, fontWeight: 'bold', color: '#5e5e5e' },
+
+  notFoundCard: { backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#000000', padding: 24 },
+  notFoundIconBox: { width: 48, height: 48, backgroundColor: '#000000', justifyContent: 'center', alignItems: 'center', marginBottom: 14 },
+  notFoundTitle: { fontSize: 14, fontWeight: '900', color: '#000000', letterSpacing: 1, marginBottom: 8 },
+  notFoundBody: { fontSize: 11, color: '#5e5e5e', lineHeight: 18, marginBottom: 20 },
+  notFoundActions: { flexDirection: 'row', gap: 10 },
+  notFoundCancelBtn: { flex: 1, borderWidth: 1, borderColor: '#c6c6c6', paddingVertical: 12, alignItems: 'center' },
+  notFoundCancelText: { fontSize: 10, fontWeight: '900', color: '#000000' },
+  notFoundConfirmBtn: { flex: 1.4, backgroundColor: '#000000', paddingVertical: 12, alignItems: 'center' },
+  notFoundConfirmText: { fontSize: 10, fontWeight: '900', color: '#ffffff', letterSpacing: 0.5 }
 });

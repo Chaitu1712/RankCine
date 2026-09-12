@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
 import Fuse from 'fuse.js';
-import { COLORS } from '../constants/theme';
+import { COLORS, useTheme } from '../constants/theme';
 import { mobileApi, resolveMediaUrl, getYouTubeInfo } from '../services/mobileApi';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -24,8 +24,30 @@ const FUSE_OPTIONS = {
   ignoreLocation: true
 };
 
+const formatLocalDateTime = (dateStr) => {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric'
+  });
+};
+
+const getCountdownBadge = (endDateStr) => {
+  if (!endDateStr) return null;
+  const diffMs = new Date(endDateStr) - new Date();
+  if (diffMs <= 0) return 'DRAW CONCLUDED';
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays > 1) return `${diffDays} DAYS LEFT TO WIN`;
+  if (diffDays === 1) return '1 DAY LEFT TO WIN';
+  if (diffHours > 0) return `${diffHours} HOURS LEFT`;
+  return 'ENDS TODAY';
+};
+
 export default function DiscoverScreen({ navigation }) {
   const { t } = useLanguage();
+  const { theme, highContrast } = useTheme();
   const { width } = useWindowDimensions();
   const flatListRef = useRef(null);
 
@@ -68,7 +90,6 @@ export default function DiscoverScreen({ navigation }) {
     }
   };
 
-  // TASK 5.2: Refresh notification vouchers whenever screen is focused
   useFocusEffect(
     useCallback(() => {
       syncNotifications();
@@ -176,6 +197,8 @@ export default function DiscoverScreen({ navigation }) {
     const isSong = item.mediaType === 'SONG';
     const isPoster = item.mediaType === 'POSTER';
     const hasReward = item.rewards_on_mediaItem && item.rewards_on_mediaItem.length > 0;
+    const activeReward = hasReward ? item.rewards_on_mediaItem[0] : null;
+
     const mediaUrl = resolveMediaUrl(item.contentUrl);
     const ytInfo = getYouTubeInfo(mediaUrl);
 
@@ -188,9 +211,14 @@ export default function DiscoverScreen({ navigation }) {
       displayThumbnail = mediaUrl;
     }
 
+    const countdownText = activeReward?.endDate ? getCountdownBadge(activeReward.endDate) : null;
+    const now = new Date();
+    const isUpcoming = item.reviewStartDate && now < new Date(item.reviewStartDate);
+    const isConcluded = item.reviewEndDate && now > new Date(item.reviewEndDate);
+
     return (
       <TouchableOpacity 
-        style={[styles.card, { flex: 1 / numColumns }]}
+        style={[styles.card, { flex: 1 / numColumns, borderColor: theme.border, borderWidth: highContrast ? 2 : 1 }]}
         activeOpacity={0.85}
         onPress={() => navigation.navigate('RateContent', { item })}
       >
@@ -199,36 +227,58 @@ export default function DiscoverScreen({ navigation }) {
             <Image source={{ uri: displayThumbnail }} style={styles.thumbnailImg} resizeMode="cover" />
           ) : (
             <View style={styles.fallbackThumbnail}>
-              {isTrailer && <Feather name="video" size={32} color={COLORS.primary} />}
-              {isSong && <Feather name="music" size={32} color={COLORS.primary} />}
-              {isPoster && <Feather name="image" size={32} color={COLORS.primary} />}
+              {isTrailer && <Feather name="video" size={32} color={theme.primary} />}
+              {isSong && <Feather name="music" size={32} color={theme.primary} />}
+              {isPoster && <Feather name="image" size={32} color={theme.primary} />}
             </View>
           )}
 
-          <View style={styles.typeBadge}>
+          <View style={[styles.typeBadge, { backgroundColor: theme.primary }]}>
             <Text style={styles.typeBadgeText}>{item.mediaType}</Text>
           </View>
 
-          {hasReward && (
-            <View style={styles.rewardBadge}>
-              <Feather name="award" size={10} color="#ffffff" />
-              <Text style={styles.rewardBadgeText}>{t('consensus_draw')}</Text>
+          {/* Countdown / Schedule Badge on Card Header */}
+          {countdownText ? (
+            <View style={styles.countdownBadge}>
+              <Feather name="clock" size={9} color="#ffffff" />
+              <Text style={styles.countdownBadgeText}>{countdownText}</Text>
             </View>
-          )}
+          ) : isUpcoming ? (
+            <View style={styles.scheduleBadgeUpcoming}>
+              <Text style={styles.scheduleBadgeText}>OPENS {formatLocalDateTime(item.reviewStartDate)}</Text>
+            </View>
+          ) : isConcluded ? (
+            <View style={styles.scheduleBadgeConcluded}>
+              <Text style={styles.scheduleBadgeText}>AUDIT CLOSED</Text>
+            </View>
+          ) : null}
         </View>
 
         <View style={styles.cardInfo}>
-          <Text style={styles.cardTitle} numberOfLines={1}>{item.title}</Text>
+          <Text style={[styles.cardTitle, { color: theme.primary }]} numberOfLines={1}>{item.title}</Text>
           <Text style={styles.cardStudio} numberOfLines={1}>BY {item.producer?.companyName || 'AXIOM STUDIO'}</Text>
 
+          {/* Subtask 3.2: Replaced AI Pre-Score with Rewards Info in Card Footer */}
           <View style={styles.cardFooter}>
-            <View style={styles.scoreBlock}>
-              <Text style={styles.scoreLabel}>{t('ai_pre_score')}</Text>
-              <Text style={styles.scoreVal}>{item.aiOverallRating || '8.5'}<Text style={{ fontSize: 10, color: '#777777' }}>/10</Text></Text>
+            <View style={styles.rewardBlock}>
+              {activeReward ? (
+                <>
+                  <Text style={styles.rewardLeadText}>SPONSOR REWARD POOL</Text>
+                  <Text style={[styles.rewardTitleText, { color: theme.primary }]} numberOfLines={1}>
+                    🎁 {activeReward.title}
+                  </Text>
+                </>
+              ) : (
+                <>
+                  <Text style={styles.rewardLeadText}>AUDIT STATUS</Text>
+                  <Text style={styles.communityOpenText}>⭐ Community Rating Open</Text>
+                </>
+              )}
             </View>
-            <View style={styles.rateBtn}>
-              <Text style={styles.rateBtnText}>{t('rate')}</Text>
-              <Feather name="arrow-right" size={12} color="#000000" />
+
+            <View style={[styles.rateBtn, { borderColor: theme.primary, backgroundColor: theme.containerLow }]}>
+              <Text style={[styles.rateBtnText, { color: theme.primary }]}>{t('rate')}</Text>
+              <Feather name="arrow-right" size={12} color={theme.primary} />
             </View>
           </View>
         </View>
@@ -271,37 +321,37 @@ export default function DiscoverScreen({ navigation }) {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <View style={[styles.header, { borderBottomColor: theme.borderLight, backgroundColor: theme.surface }]}>
         <View>
-          <Text style={styles.headerTitle}>RANK CINE</Text>
+          <Text style={[styles.headerTitle, { color: theme.primary }]}>RANK CINE</Text>
         </View>
 
         <View style={styles.headerActions}>
           <TouchableOpacity 
-            style={[styles.headerBtn, styles.bellBtn]} 
+            style={[styles.headerBtn, styles.bellBtn, { borderColor: theme.primary }]} 
             onPress={() => setNotifModalVisible(true)}
           >
-            <Feather name="bell" size={16} color="#000000" />
+            <Feather name="bell" size={16} color={theme.primary} />
             {isAuthenticated && unreadRewardsCount > 0 && (
-              <View style={styles.badgeIndicator}>
+              <View style={[styles.badgeIndicator, { backgroundColor: theme.primary }]}>
                 <Text style={styles.badgeText}>{unreadRewardsCount}</Text>
               </View>
             )}
           </TouchableOpacity>
-          <TouchableOpacity style={styles.headerBtn} onPress={() => setFilterModalVisible(true)}>
-            <Feather name="filter" size={16} color="#000000" />
+          <TouchableOpacity style={[styles.headerBtn, { borderColor: theme.primary }]} onPress={() => setFilterModalVisible(true)}>
+            <Feather name="filter" size={16} color={theme.primary} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.headerBtn} onPress={() => setSortModalVisible(true)}>
-            <Feather name="arrow-down" size={16} color="#000000" />
+          <TouchableOpacity style={[styles.headerBtn, { borderColor: theme.primary }]} onPress={() => setSortModalVisible(true)}>
+            <Feather name="arrow-down" size={16} color={theme.primary} />
           </TouchableOpacity>
         </View>
       </View>
 
-      <View style={styles.searchBar}>
+      <View style={[styles.searchBar, { borderColor: theme.borderLight }]}>
         <Feather name="search" size={14} color="#777777" style={{ marginRight: 8 }} />
         <TextInput
-          style={styles.searchInput}
+          style={[styles.searchInput, { color: theme.primary }]}
           placeholder={t('search_placeholder')}
           placeholderTextColor="#777777"
           value={searchQuery}
@@ -318,7 +368,7 @@ export default function DiscoverScreen({ navigation }) {
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator color="#000000" size="large" />
+          <ActivityIndicator color={theme.primary} size="large" />
           <Text style={styles.loadingText}>{t('syncing_stream')}</Text>
         </View>
       ) : (
@@ -338,7 +388,7 @@ export default function DiscoverScreen({ navigation }) {
             setShowScrollTop(offset > 300);
           }}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#000000" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.primary} />
           }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
@@ -350,7 +400,7 @@ export default function DiscoverScreen({ navigation }) {
           ListFooterComponent={
             loadingMore ? (
               <View style={styles.footerLoader}>
-                <ActivityIndicator size="small" color="#000000" />
+                <ActivityIndicator size="small" color={theme.primary} />
                 <Text style={styles.footerLoaderText}>STREAMING CONTENT NODES...</Text>
               </View>
             ) : null
@@ -360,14 +410,14 @@ export default function DiscoverScreen({ navigation }) {
 
       {showScrollTop && (
         <TouchableOpacity 
-          style={styles.scrollTopFab} 
+          style={[styles.scrollTopFab, { backgroundColor: theme.primary }]} 
           onPress={() => flatListRef.current?.scrollToOffset({ offset: 0, animated: true })}
         >
           <Feather name="arrow-up" size={16} color="#ffffff" />
         </TouchableOpacity>
       )}
 
-      {/* TASK 5.2: In-App Lucky Draw Winner Notifications Modal */}
+      {/* Notifications Modal */}
       <Modal visible={notifModalVisible} transparent={true} animationType="fade">
         <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setNotifModalVisible(false)}>
           <View style={styles.modalCard}>
@@ -530,16 +580,24 @@ const styles = StyleSheet.create({
   fallbackThumbnail: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#e8e8e8' },
   typeBadge: { position: 'absolute', top: 10, left: 10, backgroundColor: '#000000', paddingHorizontal: 8, paddingVertical: 3 },
   typeBadgeText: { fontSize: 9, fontWeight: '900', color: '#ffffff', letterSpacing: 0.5 },
-  rewardBadge: { position: 'absolute', top: 10, right: 10, backgroundColor: '#166534', flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 3 },
-  rewardBadgeText: { fontSize: 8, fontWeight: '900', color: '#ffffff', letterSpacing: 0.5 },
+  
+  countdownBadge: { position: 'absolute', top: 10, right: 10, backgroundColor: '#166534', flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 3 },
+  countdownBadgeText: { fontSize: 8, fontWeight: '900', color: '#ffffff', letterSpacing: 0.5 },
+  scheduleBadgeUpcoming: { position: 'absolute', top: 10, right: 10, backgroundColor: '#1e3a8a', paddingHorizontal: 8, paddingVertical: 3 },
+  scheduleBadgeConcluded: { position: 'absolute', top: 10, right: 10, backgroundColor: '#475569', paddingHorizontal: 8, paddingVertical: 3 },
+  scheduleBadgeText: { fontSize: 8, fontWeight: '900', color: '#ffffff', letterSpacing: 0.5 },
+
   cardInfo: { padding: 14 },
   cardTitle: { fontSize: 14, fontWeight: '900', color: '#000000', marginBottom: 2 },
   cardStudio: { fontSize: 9, fontWeight: 'bold', color: '#777777', letterSpacing: 0.5, marginBottom: 12 },
   cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderTopWidth: 1, borderTopColor: '#f3f3f4', paddingTop: 10 },
-  scoreBlock: { flexDirection: 'row', alignItems: 'baseline', gap: 6 },
-  scoreLabel: { fontSize: 8, fontWeight: '900', color: '#777777' },
-  scoreVal: { fontSize: 13, fontWeight: '900', color: '#000000' },
-  rateBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderColor: '#000000', paddingHorizontal: 10, paddingVertical: 4, backgroundColor: '#f3f3f4' },
+  
+  rewardBlock: { flex: 1, paddingRight: 8 },
+  rewardLeadText: { fontSize: 7, fontWeight: '900', color: '#777777', letterSpacing: 0.5, textTransform: 'uppercase' },
+  rewardTitleText: { fontSize: 11, fontWeight: '900', color: '#000000', marginTop: 1 },
+  communityOpenText: { fontSize: 10, fontWeight: 'bold', color: '#166534', marginTop: 1 },
+
+  rateBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderColor: '#000000', paddingHorizontal: 12, paddingVertical: 6, backgroundColor: '#f3f3f4' },
   rateBtnText: { fontSize: 9, fontWeight: '900', color: '#000000' },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   loadingText: { marginTop: 12, fontSize: 10, fontWeight: '900', color: '#777777', letterSpacing: 1 },

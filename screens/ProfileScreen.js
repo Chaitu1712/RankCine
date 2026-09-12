@@ -3,12 +3,14 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, ActivityIn
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { COLORS } from '../constants/theme';
+import { COLORS, useTheme } from '../constants/theme';
 import { mobileApi, resolveMediaUrl } from '../services/mobileApi';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function ProfileScreen({ navigation }) {
   const { t } = useLanguage();
+  const { theme, highContrast } = useTheme();
+
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -124,7 +126,7 @@ export default function ProfileScreen({ navigation }) {
 
   if (!loading && !isAuthenticated) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
         <View style={styles.unauthContainer}>
           <View style={styles.unauthIconBox}>
             <Feather name="user" size={36} color="#ffffff" />
@@ -145,22 +147,24 @@ export default function ProfileScreen({ navigation }) {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.headerRow}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <View style={[styles.headerRow, { borderBottomColor: theme.borderLight }]}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Feather name="arrow-left" size={20} color="black" />
+          <Feather name="arrow-left" size={20} color={theme.primary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('tab_profile') || 'CONSUMER AUDIT PROFILE'}</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('EditProfile')}>
-          <Feather name="settings" size={20} color="black" />
+        <Text style={[styles.headerTitle, { color: theme.primary }]}>{t('tab_profile') || 'CONSUMER AUDIT PROFILE'}</Text>
+        
+        {/* Subtask 3.1: Header gear icon navigates directly to Settings */}
+        <TouchableOpacity onPress={() => navigation.navigate('Settings')}>
+          <Feather name="sliders" size={20} color={theme.primary} />
         </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.mainContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.profileBox}>
+        <View style={[styles.profileBox, { borderColor: theme.primary }]}>
           <View style={styles.avatar}>
             {uploadingAvatar ? (
-              <ActivityIndicator color={COLORS.primary} size="small" />
+              <ActivityIndicator color={theme.primary} size="small" />
             ) : avatarSource ? (
               <Image 
                 key={avatarSource}
@@ -169,7 +173,7 @@ export default function ProfileScreen({ navigation }) {
                 onError={(e) => console.warn('Avatar image load failed:', e.nativeEvent.error)}
               />
             ) : (
-              <Text style={styles.avatarInitial}>
+              <Text style={[styles.avatarInitial, { color: theme.primary }]}>
                 {displayName.charAt(0).toUpperCase()}
               </Text>
             )}
@@ -179,23 +183,23 @@ export default function ProfileScreen({ navigation }) {
           </View>
         </View>
 
-        <Text style={styles.username}>{displayName.toUpperCase()}</Text>
+        <Text style={[styles.username, { color: theme.primary }]}>{displayName.toUpperCase()}</Text>
         <Text style={styles.handle}>{displayHandle.toLowerCase()}</Text>
 
         {/* 2-COLUMN METRICS MATRIX */}
         <View style={styles.metricsMatrix}>
-          <View style={styles.metricCard}>
+          <View style={[styles.metricCard, { borderWidth: highContrast ? 2 : 1 }]}>
             <Text style={styles.metricCardLabel}>{t('total_reviewed') || 'TOTAL AUDITED'}</Text>
             <Text style={styles.metricCardNum}>{loading ? '...' : reviewCount}</Text>
           </View>
-          <View style={styles.metricCard}>
+          <View style={[styles.metricCard, { borderWidth: highContrast ? 2 : 1 }]}>
             <Text style={styles.metricCardLabel}>ACCURACY INDEX</Text>
             <Text style={styles.metricCardNum}>{loading ? '...' : `${accuracyPercentile.toFixed(1)}%`}</Text>
           </View>
         </View>
 
         {/* ACCURACY PERCENTILE GAUGE */}
-        <View style={styles.gaugeContainer}>
+        <View style={[styles.gaugeContainer, { borderWidth: highContrast ? 2 : 1 }]}>
           <View style={styles.gaugeHeader}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
               <Feather name="crosshair" size={12} color="#000000" />
@@ -223,14 +227,14 @@ export default function ProfileScreen({ navigation }) {
 
         <Text style={styles.menuTitle}>{t('account_settings') || 'ACCOUNT LEDGERS & CONFIG'}</Text>
         
-        <View style={styles.menuList}>
+        <View style={[styles.menuList, { borderWidth: highContrast ? 2 : 1 }]}>
           <TouchableOpacity 
             style={styles.menuItem}
             onPress={() => navigation.navigate('Ratings')}
           >
             <View style={styles.menuLeft}>
               <Feather name="file-text" size={16} color="black" />
-              <Text style={styles.menuText}>{t('my_reviewed_items') || 'My Reviewed Items'}</Text>
+              <Text style={[styles.menuText, { color: theme.primary }]}>{t('my_reviewed_items') || 'My Reviewed Items'}</Text>
             </View>
             <Feather name="chevron-right" size={16} color="black" />
           </TouchableOpacity>
@@ -241,7 +245,7 @@ export default function ProfileScreen({ navigation }) {
           >
             <View style={styles.menuLeft}>
               <Feather name="award" size={16} color="black" />
-              <Text style={styles.menuText}>{t('my_rewards') || 'My Rewards & Vouchers'}</Text>
+              <Text style={[styles.menuText, { color: theme.primary }]}>{t('my_rewards') || 'My Rewards & Vouchers'}</Text>
             </View>
             <Feather name="chevron-right" size={16} color="black" />
           </TouchableOpacity>
@@ -252,7 +256,19 @@ export default function ProfileScreen({ navigation }) {
           >
             <View style={styles.menuLeft}>
               <Feather name="user-check" size={16} color="black" />
-              <Text style={styles.menuText}>{t('edit_profile') || 'Edit Profile Details'}</Text>
+              <Text style={[styles.menuText, { color: theme.primary }]}>{t('edit_profile') || 'Edit Profile Details'}</Text>
+            </View>
+            <Feather name="chevron-right" size={16} color="black" />
+          </TouchableOpacity>
+
+          {/* Subtask 3.1: Settings & Preferences Option */}
+          <TouchableOpacity 
+            style={styles.menuItem}
+            onPress={() => navigation.navigate('Settings')}
+          >
+            <View style={styles.menuLeft}>
+              <Feather name="sliders" size={16} color="black" />
+              <Text style={[styles.menuText, { color: theme.primary }]}>Settings & UI Preferences</Text>
             </View>
             <Feather name="chevron-right" size={16} color="black" />
           </TouchableOpacity>
@@ -263,7 +279,7 @@ export default function ProfileScreen({ navigation }) {
           >
             <View style={styles.menuLeft}>
               <Feather name="globe" size={16} color="black" />
-              <Text style={styles.menuText}>{t('choose_language') || 'Interface Language'}</Text>
+              <Text style={[styles.menuText, { color: theme.primary }]}>{t('choose_language') || 'Interface Language'}</Text>
             </View>
             <Feather name="chevron-right" size={16} color="black" />
           </TouchableOpacity>
@@ -274,7 +290,7 @@ export default function ProfileScreen({ navigation }) {
           >
             <View style={styles.menuLeft}>
               <Feather name="help-circle" size={16} color="black" />
-              <Text style={styles.menuText}>{t('help_support') || 'Help & Support Desk'}</Text>
+              <Text style={[styles.menuText, { color: theme.primary }]}>{t('help_support') || 'Help & Support Desk'}</Text>
             </View>
             <Feather name="chevron-right" size={16} color="black" />
           </TouchableOpacity>
@@ -285,7 +301,7 @@ export default function ProfileScreen({ navigation }) {
           >
             <View style={styles.menuLeft}>
               <Feather name="log-out" size={16} color="black" />
-              <Text style={styles.menuText}>{t('log_out') || 'Log Out Session'}</Text>
+              <Text style={[styles.menuText, { color: theme.primary }]}>{t('log_out') || 'Log Out Session'}</Text>
             </View>
             <Feather name="chevron-right" size={16} color="black" />
           </TouchableOpacity>
