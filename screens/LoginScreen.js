@@ -50,7 +50,6 @@ export default function LoginScreen({ route, navigation }) {
   const [loading, setLoading] = useState(false);
   const [sendingOtp, setSendingOtp] = useState(false);
 
-  // Subtask 3.3: 404 Account Not Found Modal State
   const [showNotFoundModal, setShowNotFoundModal] = useState(false);
   const [notFoundPhone, setNotFoundPhone] = useState('');
 
@@ -78,6 +77,23 @@ export default function LoginScreen({ route, navigation }) {
       setSendingOtp(true);
       const fullPhone = getCleanPhone();
       
+      // 1. Pre-check database: does the user exist?
+      const checkRes = await mobileApi.get(`/auth/check-user?target=${encodeURIComponent(fullPhone)}`);
+      
+      if (!checkRes || !checkRes.exists) {
+        setSendingOtp(false);
+        setNotFoundPhone(fullPhone);
+        setShowNotFoundModal(true);
+        return; // HALT: Never trigger Firebase SMS if not registered
+      }
+
+      if (checkRes.status === 'SUSPENDED') {
+        setSendingOtp(false);
+        Alert.alert('Account Suspended', 'This account has been suspended due to community infractions.');
+        return;
+      }
+
+      // 2. User exists: proceed with Firebase SMS dispatch
       const confirmation = await sendPhoneOtp(fullPhone);
       setConfirmationResult(confirmation);
 
@@ -143,7 +159,6 @@ export default function LoginScreen({ route, navigation }) {
     } catch (err) {
       console.error('Login Failed:', err);
 
-      // Subtask 3.3: Intercept 404 USER_NOT_FOUND
       if (err.status === 404 || err.code === 'USER_NOT_FOUND' || err.message?.includes('not found')) {
         setNotFoundPhone(getCleanPhone());
         setShowNotFoundModal(true);
@@ -245,7 +260,6 @@ export default function LoginScreen({ route, navigation }) {
         </TouchableOpacity>
       </ScrollView>
 
-      {/* Subtask 3.3: Non-Existent User Modal */}
       {showNotFoundModal && (
         <Modal visible={true} transparent={true} animationType="fade">
           <View style={styles.modalOverlay}>

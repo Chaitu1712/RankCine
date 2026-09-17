@@ -47,7 +47,6 @@ export default function ReviewSubmittedScreen({ route, navigation }) {
             <Text style={styles.scoreNum}>{ratingScore}</Text>
           </View>
           
-          {/* Subtask 3.4: Rebranded to TEXT REVIEW QUALITY with Tooltip */}
           <View style={styles.scoreCard}>
             <View style={styles.qualityLabelRow}>
               <Text style={styles.scoreLabel}>{t('text_review_quality') || 'TEXT REVIEW QUALITY'}</Text>
@@ -59,7 +58,6 @@ export default function ReviewSubmittedScreen({ route, navigation }) {
           </View>
         </View>
 
-        {/* Subtask 3.4: Stripped vendor AI branding */}
         <Text style={styles.sectionHeader}>{t('ai_audit_synthesis') || 'AI AUDIT SYNTHESIS'}</Text>
         <View style={styles.aiCard}>
           <Text style={styles.aiText}>
@@ -86,7 +84,6 @@ export default function ReviewSubmittedScreen({ route, navigation }) {
 
       </View>
 
-      {/* Subtask 3.4: Quality Tooltip Modal */}
       {showQualityTooltip && (
         <Modal visible={true} transparent={true} animationType="fade">
           <TouchableOpacity 

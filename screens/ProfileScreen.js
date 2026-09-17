@@ -154,7 +154,6 @@ export default function ProfileScreen({ navigation }) {
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: theme.primary }]}>{t('tab_profile') || 'CONSUMER AUDIT PROFILE'}</Text>
         
-        {/* Subtask 3.1: Header gear icon navigates directly to Settings */}
         <TouchableOpacity onPress={() => navigation.navigate('Settings')}>
           <Feather name="sliders" size={20} color={theme.primary} />
         </TouchableOpacity>
@@ -261,7 +260,6 @@ export default function ProfileScreen({ navigation }) {
             <Feather name="chevron-right" size={16} color="black" />
           </TouchableOpacity>
 
-          {/* Subtask 3.1: Settings & Preferences Option */}
           <TouchableOpacity 
             style={styles.menuItem}
             onPress={() => navigation.navigate('Settings')}

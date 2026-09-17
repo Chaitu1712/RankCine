@@ -203,8 +203,6 @@ export const TRANSLATIONS = {
     Audio: 'Audio',
     Direction: 'Direction',
     Cinematography: 'Cinematography',
-    
-    // Subtask 3.3 & 3.4 additions
     mandatory_fields_notice: 'Fields marked with a red asterisk (*) are mandatory.',
     why_needed: '[ Why is this needed? ]',
     why_needed_toggle: '[ Why is this needed? ]',
@@ -419,8 +417,6 @@ export const TRANSLATIONS = {
     Audio: 'ऑडियो',
     Direction: 'निर्देशन',
     Cinematography: 'छायांकन',
-
-    // Subtask 3.3 & 3.4 additions
     mandatory_fields_notice: 'लाल तारे (*) वाले फ़ील्ड अनिवार्य हैं।',
     why_needed: '[ यह क्यों आवश्यक है? ]',
     why_needed_toggle: '[ यह क्यों आवश्यक है? ]',
@@ -635,8 +631,6 @@ export const TRANSLATIONS = {
     Audio: 'ఆడియో',
     Direction: 'దర్శకత్వం',
     Cinematography: 'ఛాయాగ్రహణం',
-
-    // Subtask 3.3 & 3.4 additions
     mandatory_fields_notice: 'ఎరుపు నక్షత్రం (*) ఉన్న ఫీల్డ్‌లు తప్పనిసరి.',
     why_needed: '[ ఇది ఎందుకు అవసరం? ]',
     why_needed_toggle: '[ ఇది ఎందుకు అవసరం? ]',
@@ -851,8 +845,6 @@ export const TRANSLATIONS = {
     Audio: 'ஒலி',
     Direction: 'இயக்கம்',
     Cinematography: 'ஒளிப்பதிவு',
-
-    // Subtask 3.3 & 3.4 additions
     mandatory_fields_notice: 'சிவப்பு நட்சத்திரக் குறியிட்ட (*) புலங்கள் கட்டாயமானவை.',
     why_needed: '[ இது ஏன் தேவைப்படுகிறது? ]',
     why_needed_toggle: '[ இது ஏன் தேவைப்படுகிறது? ]',
@@ -1067,8 +1059,6 @@ export const TRANSLATIONS = {
     Audio: 'Sonido',
     Direction: 'Dirección',
     Cinematography: 'Cinematografía',
-
-    // Subtask 3.3 & 3.4 additions
     mandatory_fields_notice: 'Los campos marcados con un asterisco rojo (*) son obligatorios.',
     why_needed: '[ ¿Por qué es necesario? ]',
     why_needed_toggle: '[ ¿Por qué es necesario? ]',
@@ -1283,8 +1273,6 @@ export const TRANSLATIONS = {
     Audio: 'Son',
     Direction: 'Mise en scène',
     Cinematography: 'Cinématographie',
-
-    // Subtask 3.3 & 3.4 additions
     mandatory_fields_notice: 'Les champs marqués d\'un astérisque rouge (*) sont obligatoires.',
     why_needed: '[ Pourquoi est-ce nécessaire ? ]',
     why_needed_toggle: '[ Pourquoi est-ce nécessaire ? ]',

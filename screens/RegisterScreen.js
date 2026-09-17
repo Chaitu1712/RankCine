@@ -113,7 +113,6 @@ export default function RegisterScreen({ route, navigation }) {
   const [dobDay, setDobDay] = useState('');
   const [dobYear, setDobYear] = useState('');
 
-  // Subtask 3.4: Landmark field & structured address
   const [street, setStreet] = useState('');
   const [addressLine2, setAddressLine2] = useState('');
   const [landmark, setLandmark] = useState('');
@@ -125,11 +124,9 @@ export default function RegisterScreen({ route, navigation }) {
   const [langInput, setLanguagesInput] = useState('');
   const [gender, setGender] = useState('');
 
-  // Subtask 3.4: Accordion expand/collapse states
   const [showDobWhy, setShowDobWhy] = useState(false);
   const [showAddressWhy, setShowAddressWhy] = useState(false);
 
-  // Subtask 3.3: Inline validation touched states
   const [touched, setTouched] = useState({});
 
   const [loading, setLoading] = useState(false);
@@ -141,7 +138,6 @@ export default function RegisterScreen({ route, navigation }) {
   const availableStates = STATES_BY_COUNTRY[country] || ['General Region', 'Other'];
   const selectedCountryObj = COUNTRY_DIAL_CODES.find(c => c.code === countryCode) || COUNTRY_DIAL_CODES[0];
 
-  // Subtask 3.3: Consume auto-prefilled phone number
   useEffect(() => {
     if (prefilledPhone) {
       const trimmed = prefilledPhone.trim();
@@ -278,7 +274,6 @@ export default function RegisterScreen({ route, navigation }) {
 
       <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
         
-        {/* Subtask 3.4: Top Mandatory Fields Notice */}
         <View style={styles.mandatoryNotice}>
           <Feather name="info" size={13} color="#000000" />
           <Text style={styles.mandatoryNoticeText}>
@@ -371,7 +366,6 @@ export default function RegisterScreen({ route, navigation }) {
           onBlur={() => markTouched('otp')}
         />
 
-        {/* Subtask 3.4: Date of Birth Section with Accordion */}
         <View style={styles.sectionHeaderRow}>
           <Text style={styles.label}>{t('date_of_birth') || 'DATE OF BIRTH'}</Text>
           <TouchableOpacity onPress={() => setShowDobWhy(!showDobWhy)} style={styles.whyToggle}>
@@ -403,7 +397,6 @@ export default function RegisterScreen({ route, navigation }) {
           </View>
         </View>
 
-        {/* Subtask 3.4: Structured Address Card with Accordion & Landmark */}
         <View style={styles.sectionHeaderRow}>
           <Text style={styles.label}>{t('address_details') || 'PHYSICAL ADDRESS'}</Text>
           <TouchableOpacity onPress={() => setShowAddressWhy(!showAddressWhy)} style={styles.whyToggle}>
@@ -505,7 +498,6 @@ export default function RegisterScreen({ route, navigation }) {
           ))}
         </View>
 
-        {/* Subtask 3.4: "Doesn't want to disclose" Gender Option */}
         <Text style={styles.label}>{t('gender_optional') || 'GENDER (OPTIONAL)'}</Text>
         <View style={styles.genderBox}>
           <TouchableOpacity onPress={() => setGender('MALE')} style={styles.genderOption}>

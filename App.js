@@ -23,7 +23,7 @@ import LeaderboardRewardsScreen from './screens/LeaderboardRewardsScreen';
 import ReportContentScreen from './screens/ReportContentScreen';
 import EditProfileScreen from './screens/EditProfileScreen';
 import HelpSupportScreen from './screens/HelpSupportScreen';
-import SettingsScreen from './screens/SettingsScreen'; // Subtask 3.1
+import SettingsScreen from './screens/SettingsScreen'; 
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();

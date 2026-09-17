@@ -89,13 +89,11 @@ export default function EditProfileScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // Subtask 3.4: Accordion toggle states
   const [showDobWhy, setShowDobWhy] = useState(false);
   const [showAddressWhy, setShowAddressWhy] = useState(false);
 
   const [selectedLanguages, setSelectedLanguages] = useState(['EN']);
 
-  // Subtask 3.4: Added landmark to state
   const [form, setForm] = useState({
     fullName: '', phone: '', email: '', 
     month: '', day: '', year: '', 
@@ -368,8 +366,7 @@ export default function EditProfileScreen({ navigation }) {
           ))}
         </View>
 
-        {/* Subtask 3.4: "Doesn't want to disclose" Gender */}
-        <Text style={styles.label}>{t('gender_optional') || 'GENDER (OPTIONAL)'}</Text>
+       <Text style={styles.label}>{t('gender_optional') || 'GENDER (OPTIONAL)'}</Text>
         <View style={styles.genderBox}>
           <TouchableOpacity onPress={() => handleInput('gender', 'MALE')}>
             <Text style={[styles.genderText, form.gender === 'MALE' && { fontWeight: '900', color: COLORS.primary }]}>

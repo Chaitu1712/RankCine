@@ -120,10 +120,8 @@ export default function RateContentScreen({ route, navigation }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageModalVisible, setImageModalVisible] = useState(false);
 
-  // Subtask 3.1: Preference for AI narrative formatting
   const [aiFormattingEnabled, setAiFormattingEnabled] = useState(true);
 
-  // Subtask 3.2: Review scheduling bounds check
   const now = new Date();
   const isUpcoming = item?.reviewStartDate && now < new Date(item.reviewStartDate);
   const isConcluded = item?.reviewEndDate && now > new Date(item.reviewEndDate);
@@ -237,7 +235,6 @@ export default function RateContentScreen({ route, navigation }) {
       formData.append('rawTextInput', reviewDraft.feedback);
       formData.append('parameterScores', JSON.stringify(parameterScores));
 
-      // Subtask 3.1: Pass skipFormatting if user disabled AI formatting in Settings
       if (!aiFormattingEnabled) {
         formData.append('skipFormatting', 'true');
       }
@@ -318,7 +315,6 @@ export default function RateContentScreen({ route, navigation }) {
               {renderActivePlayer()}
             </View>
 
-            {/* Subtask 3.2: Review Window Scheduling Banner */}
             {isWindowLocked && (
               <View style={styles.lockedBanner}>
                 <Feather name="lock" size={14} color="#ffffff" style={{ marginTop: 1 }} />

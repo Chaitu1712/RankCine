@@ -258,7 +258,6 @@ export default function DiscoverScreen({ navigation }) {
           <Text style={[styles.cardTitle, { color: theme.primary }]} numberOfLines={1}>{item.title}</Text>
           <Text style={styles.cardStudio} numberOfLines={1}>BY {item.producer?.companyName || 'AXIOM STUDIO'}</Text>
 
-          {/* Subtask 3.2: Replaced AI Pre-Score with Rewards Info in Card Footer */}
           <View style={styles.cardFooter}>
             <View style={styles.rewardBlock}>
               {activeReward ? (
