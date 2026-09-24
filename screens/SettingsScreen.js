@@ -5,6 +5,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Feather } from '@expo/vector-icons';
 import { COLORS, THEME_PRESETS, useTheme } from '../constants/theme';
 import { useLanguage } from '../context/LanguageContext';
+import { mobileApi } from '../services/mobileApi';
+import auth from '@react-native-firebase/auth';
 
 export default function SettingsScreen({ navigation }) {
   const { t } = useLanguage();
@@ -12,6 +14,7 @@ export default function SettingsScreen({ navigation }) {
 
   const [aiFormattingEnabled, setAiFormattingEnabled] = useState(true);
   const [deviceTimezone, setDeviceTimezone] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -20,7 +23,7 @@ export default function SettingsScreen({ navigation }) {
         if (storedAIFormat !== null) {
           setAiFormattingEnabled(storedAIFormat === 'true');
         }
-        
+
         const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Auto (System)';
         setDeviceTimezone(tz);
       } catch (err) {
@@ -40,16 +43,61 @@ export default function SettingsScreen({ navigation }) {
     }
   };
 
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Permanently Delete Account',
+      'Are you sure you want to permanently delete your account? All evaluation history, accuracy scores, and unlocked vouchers will be erased. Your phone number will be removed from Firebase Authentication and our database.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete My Account',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setIsDeleting(true);
+
+              // 1. Call backend to wipe PostgreSQL PII, free phone constraint, and delete from Firebase Auth via Admin SDK
+              await mobileApi.delete('/users/me/account');
+
+              // 2. Clear local client Firebase Auth credentials
+              try {
+                if (auth().currentUser) {
+                  await auth().signOut();
+                }
+              } catch (fbSignOutErr) {
+                console.warn('Firebase client signout cleanup:', fbSignOutErr);
+              }
+
+              // 3. Purge mobile tokens and cached user data
+              await mobileApi.clearAuth();
+
+              Alert.alert('Account Closed', 'Your account has been deleted and your personal data has been erased.');
+              
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Language' }],
+              });
+            } catch (err) {
+              Alert.alert('Deletion Error', err.message || 'Failed to delete account. Please check your connection.');
+            } finally {
+              setIsDeleting(false);
+            }
+          }
+        }
+      ]
+    );
+  };
+
   const handleConfirmReset = () => {
     Alert.alert(
       'Reset Theme',
       'Reset interface color tokens back to the default Architectural Wireframe monochromatic palette?',
       [
         { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Reset', 
+        {
+          text: 'Reset',
           style: 'destructive',
-          onPress: resetToDefault 
+          onPress: resetToDefault
         }
       ]
     );
@@ -58,7 +106,7 @@ export default function SettingsScreen({ navigation }) {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={[styles.headerRow, { borderBottomColor: theme.borderLight }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={() => navigation.goBack()} disabled={isDeleting}>
           <Feather name="arrow-left" size={20} color={theme.primary} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: theme.primary }]}>SETTINGS & PREFERENCES</Text>
@@ -113,7 +161,7 @@ export default function SettingsScreen({ navigation }) {
           </View>
 
           {/* Reset To Default Button */}
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.resetButton, { borderColor: theme.primary }]}
             onPress={handleConfirmReset}
           >
@@ -166,6 +214,26 @@ export default function SettingsScreen({ navigation }) {
           </Text>
         </View>
 
+        {/* DANGER ZONE: ACCOUNT DELETION (Apple Guideline 5.1.1(v) & DPDP Act 2023) */}
+        <Text style={[styles.sectionTitle, { color: COLORS.danger, marginTop: 10 }]}>ACCOUNT ACTIONS</Text>
+        <View style={[styles.card, { borderColor: COLORS.danger, borderWidth: 1.5 }]}>
+          <Text style={styles.toggleTitle}>Permanently Close Account</Text>
+          <Text style={styles.toggleSubtitle}>
+            Permanently delete your profile, accuracy rank, and personal data in accordance with DPDP Act 2023 Right to Erasure. Your phone number will be erased from Firebase Authentication and unlinked in our database.
+          </Text>
+
+          <TouchableOpacity
+            style={[styles.deleteButton, isDeleting && { opacity: 0.6 }]}
+            onPress={handleDeleteAccount}
+            disabled={isDeleting}
+          >
+            <Feather name="trash-2" size={13} color="#ffffff" />
+            <Text style={styles.deleteButtonText}>
+              {isDeleting ? 'DELETING ACCOUNT...' : 'DELETE MY ACCOUNT'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
       </ScrollView>
     </SafeAreaView>
   );
@@ -196,5 +264,7 @@ const styles = StyleSheet.create({
   infoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
   infoLabel: { fontSize: 11, fontWeight: 'bold', color: '#000000' },
   infoValue: { fontSize: 11, fontMono: true, fontWeight: 'bold', color: '#5e5e5e' },
-  timezoneNote: { fontSize: 9, color: '#777777', lineHeight: 14, fontStyle: 'italic' }
+  timezoneNote: { fontSize: 9, color: '#777777', lineHeight: 14, fontStyle: 'italic' },
+  deleteButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: COLORS.danger, paddingVertical: 12, marginTop: 14 },
+  deleteButtonText: { fontSize: 10, fontWeight: '900', color: '#ffffff', letterSpacing: 0.5 }
 });

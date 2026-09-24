@@ -5,13 +5,16 @@ import {
   StyleSheet, 
   FlatList, 
   TouchableOpacity, 
-  useWindowDimensions 
+  useWindowDimensions,
+  Platform
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Feather } from '@expo/vector-icons';
 import { COLORS, useTheme } from '../constants/theme';
 import { useLanguage } from '../context/LanguageContext';
+
+const MONO_FONT = Platform.OS === 'ios' ? 'Menlo' : 'monospace';
 
 export default function OnboardingScreen({ navigation }) {
   const { t } = useLanguage();
@@ -44,7 +47,9 @@ export default function OnboardingScreen({ navigation }) {
   const renderSlide1 = () => (
     <View style={[styles.slideCard, { borderColor: theme.border, borderWidth: highContrast ? 2 : 1 }]}>
       <View style={styles.slideHeaderBadgeRow}>
-        <span style={styles.tagBadge}>ROADMAP</span>
+        <View style={styles.tagBadge}>
+          <Text style={styles.tagBadgeText}>ROADMAP</Text>
+        </View>
         <Text style={styles.stepCounterText}>01 / 05</Text>
       </View>
 
@@ -83,20 +88,23 @@ export default function OnboardingScreen({ navigation }) {
   const renderSlide2 = () => (
     <View style={[styles.slideCard, { borderColor: theme.border, borderWidth: highContrast ? 2 : 1 }]}>
       <View style={styles.slideHeaderBadgeRow}>
-        <span style={styles.tagBadge}>PORTFOLIO</span>
+        <View style={styles.tagBadge}>
+          <Text style={styles.tagBadgeText}>PORTFOLIO</Text>
+        </View>
         <Text style={styles.stepCounterText}>02 / 05</Text>
       </View>
 
       <Text style={[styles.slideTitle, { color: theme.primary }]}>YOUR REWARD PORTFOLIO</Text>
       <Text style={styles.slideSubtitle}>Chronological accuracy ledger & milestone earnings.</Text>
 
-      {/* Metric Callout Card */}
       <View style={[styles.blueprintBox, { borderColor: theme.border }]}>
         <View style={styles.metricRow}>
-          <div>
+          <View>
             <Text style={styles.boxMiniLabel}>ACCRUED ACCURACY</Text>
-            <Text style={[styles.boxBigNumber, { color: theme.primary }]}>2,480 <Text style={{ fontSize: 11 }}>PTS</Text></Text>
-          </div>
+            <Text style={[styles.boxBigNumber, { color: theme.primary }]}>
+              2,480 <Text style={{ fontSize: 11 }}>PTS</Text>
+            </Text>
+          </View>
           <View style={styles.levelBadge}>
             <Text style={styles.levelBadgeText}>LEVEL 2 • RISING RANKER</Text>
           </View>
@@ -108,7 +116,6 @@ export default function OnboardingScreen({ navigation }) {
         <Text style={styles.progressLabel}>480 / 1,000 PTS TO LEVEL 3</Text>
       </View>
 
-      {/* Milestone Chain Preview */}
       <Text style={styles.subSectionHeader}>MILESTONE JOURNEY</Text>
       <View style={styles.milestoneGrid}>
         {[
@@ -148,29 +155,29 @@ export default function OnboardingScreen({ navigation }) {
   const renderSlide3 = () => (
     <View style={[styles.slideCard, { borderColor: theme.border, borderWidth: highContrast ? 2 : 1 }]}>
       <View style={styles.slideHeaderBadgeRow}>
-        <span style={styles.tagBadge}>CONSENSUS ENGINE</span>
+        <View style={styles.tagBadge}>
+          <Text style={styles.tagBadgeText}>CONSENSUS ENGINE</Text>
+        </View>
         <Text style={styles.stepCounterText}>03 / 05</Text>
       </View>
 
       <Text style={[styles.slideTitle, { color: theme.primary }]}>RATE FOR REWARDS</Text>
       <Text style={styles.slideSubtitle}>Quality feedback is your currency.</Text>
 
-      {/* 4-Step Chain */}
       <View style={styles.chainRow}>
         {['Rate Content', 'Earn Accuracy', 'Level Up', 'Win Vouchers'].map((step, idx) => (
-          <React.Fragment key={step}>
+          <View key={step} style={{ flexDirection: 'row', alignItems: 'center' }}>
             <View style={styles.chainStep}>
               <View style={[styles.chainCircle, { backgroundColor: theme.primary }]}>
                 <Text style={styles.chainCircleText}>{idx + 1}</Text>
               </View>
               <Text style={styles.chainText}>{step}</Text>
             </View>
-            {idx < 3 && <Feather name="arrow-right" size={10} color="#777777" style={{ marginTop: 8 }} />}
-          </React.Fragment>
+            {idx < 3 && <Feather name="arrow-right" size={10} color="#777777" style={{ marginHorizontal: 2 }} />}
+          </View>
         ))}
       </View>
 
-      {/* Reward Tier Breakdown */}
       <Text style={styles.subSectionHeader}>COMMUNITY REWARD TIERS</Text>
       <View style={styles.tiersGrid}>
         {[
@@ -187,7 +194,6 @@ export default function OnboardingScreen({ navigation }) {
         ))}
       </View>
 
-      {/* What You Can Win Chips */}
       <Text style={styles.subSectionHeader}>WHAT YOU UNLOCK</Text>
       <View style={styles.chipRow}>
         {['Movie Tickets & Passes', 'Sponsor Vouchers', 'Brand Discounts', 'Exclusive Screening Invites'].map(p => (
@@ -206,14 +212,15 @@ export default function OnboardingScreen({ navigation }) {
   const renderSlide4 = () => (
     <View style={[styles.slideCard, { borderColor: theme.border, borderWidth: highContrast ? 2 : 1 }]}>
       <View style={styles.slideHeaderBadgeRow}>
-        <span style={styles.tagBadge}>PERFORMANCE MATRIX</span>
+        <View style={styles.tagBadge}>
+          <Text style={styles.tagBadgeText}>PERFORMANCE MATRIX</Text>
+        </View>
         <Text style={styles.stepCounterText}>04 / 05</Text>
       </View>
 
       <Text style={[styles.slideTitle, { color: theme.primary }]}>ELITE PERCENTILE RANK</Text>
       <Text style={styles.slideSubtitle}>Reach the top 5% of community consensus accuracy.</Text>
 
-      {/* Top 5% Hero Card */}
       <View style={[styles.heroBadgeBox, { backgroundColor: theme.primary }]}>
         <View style={styles.top5Circle}>
           <Text style={styles.top5Text}>TOP</Text>
@@ -227,7 +234,6 @@ export default function OnboardingScreen({ navigation }) {
         </View>
       </View>
 
-      {/* Percentile Benchmark Bars */}
       <Text style={styles.subSectionHeader}>AUDIENCE ACCURACY BENCHMARKS</Text>
       <View style={styles.benchmarkContainer}>
         {[
@@ -248,7 +254,6 @@ export default function OnboardingScreen({ navigation }) {
         ))}
       </View>
 
-      {/* Impact Pillars */}
       <View style={styles.impactGrid}>
         <View style={styles.impactCol}>
           <Feather name="shield" size={13} color="#000000" />
@@ -270,7 +275,9 @@ export default function OnboardingScreen({ navigation }) {
   const renderSlide5 = () => (
     <View style={[styles.slideCard, { borderColor: theme.border, borderWidth: highContrast ? 2 : 1 }]}>
       <View style={styles.slideHeaderBadgeRow}>
-        <span style={styles.tagBadge}>DIRECTORIAL ACCESS</span>
+        <View style={styles.tagBadge}>
+          <Text style={styles.tagBadgeText}>DIRECTORIAL ACCESS</Text>
+        </View>
         <Text style={styles.stepCounterText}>05 / 05</Text>
       </View>
 
@@ -279,7 +286,6 @@ export default function OnboardingScreen({ navigation }) {
         Where top rankers unlock direct creator and commercial rewards.
       </Text>
 
-      {/* 4 Feature Cards */}
       <View style={styles.featuresList}>
         {[
           { 
@@ -337,10 +343,10 @@ export default function OnboardingScreen({ navigation }) {
       
       {/* Top Header Bar */}
       <View style={[styles.headerBar, { borderBottomColor: theme.borderLight }]}>
-        <div>
+        <View>
           <Text style={[styles.brandTitle, { color: theme.primary }]}>RANK CINE</Text>
           <Text style={styles.brandMotto}>WATCH. RANK. BE HEARD.</Text>
-        </div>
+        </View>
 
         <TouchableOpacity onPress={handleFinishOnboarding} style={styles.skipButton}>
           <Text style={[styles.skipButtonText, { color: theme.secondary }]}>SKIP</Text>
@@ -404,25 +410,26 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ffffff' },
   headerBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#e8e8e8' },
   brandTitle: { fontSize: 16, fontWeight: '900', letterSpacing: 0.5 },
-  brandMotto: { fontSize: 8, fontMono: true, fontWeight: 'bold', color: '#777777', letterSpacing: 1, marginTop: 1 },
+  brandMotto: { fontSize: 8, fontFamily: MONO_FONT, fontWeight: 'bold', color: '#777777', letterSpacing: 1, marginTop: 1 },
   skipButton: { paddingVertical: 6, paddingHorizontal: 10, borderWidth: 1, borderColor: '#c6c6c6' },
-  skipButtonText: { fontSize: 9, fontMono: true, fontWeight: '900', letterSpacing: 1 },
+  skipButtonText: { fontSize: 9, fontFamily: MONO_FONT, fontWeight: '900', letterSpacing: 1 },
 
   slideWrapper: { padding: 20, justifyContent: 'center' },
   slideCard: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#000000', padding: 20, minHeight: 460 },
   slideHeaderBadgeRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  tagBadge: { fontSize: 8, fontMono: true, fontWeight: '900', backgroundColor: '#000000', color: '#ffffff', paddingHorizontal: 6, paddingVertical: 2, letterSpacing: 0.5 },
-  stepCounterText: { fontSize: 10, fontMono: true, fontWeight: 'bold', color: '#777777' },
+  tagBadge: { backgroundColor: '#000000', paddingHorizontal: 6, paddingVertical: 2 },
+  tagBadgeText: { fontSize: 8, fontFamily: MONO_FONT, fontWeight: '900', color: '#ffffff', letterSpacing: 0.5 },
+  stepCounterText: { fontSize: 10, fontFamily: MONO_FONT, fontWeight: 'bold', color: '#777777' },
 
   slideTitle: { fontSize: 18, fontWeight: '900', letterSpacing: -0.5, marginBottom: 2 },
   slideSubtitle: { fontSize: 11, color: '#555555', marginBottom: 16, fontWeight: '500' },
-  subSectionHeader: { fontSize: 9, fontMono: true, fontWeight: '900', color: '#777777', letterSpacing: 1, marginTop: 12, marginBottom: 8 },
+  subSectionHeader: { fontSize: 9, fontFamily: MONO_FONT, fontWeight: '900', color: '#777777', letterSpacing: 1, marginTop: 12, marginBottom: 8 },
 
   // Slide 1 Styles
   stepFlowContainer: { marginTop: 4 },
   stepRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 10, position: 'relative' },
   stepNumBox: { width: 22, height: 22, justifyContent: 'center', alignItems: 'center', marginRight: 12, marginTop: 2 },
-  stepNumText: { color: '#ffffff', fontSize: 9, fontMono: true, fontWeight: '900' },
+  stepNumText: { color: '#ffffff', fontSize: 9, fontFamily: MONO_FONT, fontWeight: '900' },
   stepContent: { flex: 1 },
   stepTitle: { fontSize: 12, fontWeight: '900' },
   stepDesc: { fontSize: 10, color: '#5e5e5e', marginTop: 1, lineHeight: 14 },
@@ -431,32 +438,32 @@ const styles = StyleSheet.create({
   // Slide 2 Styles
   blueprintBox: { borderWidth: 1, borderColor: '#000000', backgroundColor: '#f9f9f9', padding: 14, marginBottom: 10 },
   metricRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  boxMiniLabel: { fontSize: 8, fontMono: true, fontWeight: '900', color: '#777777' },
+  boxMiniLabel: { fontSize: 8, fontFamily: MONO_FONT, fontWeight: '900', color: '#777777' },
   boxBigNumber: { fontSize: 22, fontWeight: '900', marginTop: 1 },
   levelBadge: { backgroundColor: '#000000', paddingHorizontal: 8, paddingVertical: 3 },
-  levelBadgeText: { color: '#ffffff', fontSize: 8, fontMono: true, fontWeight: '900' },
+  levelBadgeText: { color: '#ffffff', fontSize: 8, fontFamily: MONO_FONT, fontWeight: '900' },
   progressTrack: { height: 6, backgroundColor: '#e5e7eb', width: '100%', marginBottom: 4 },
   progressFill: { height: '100%' },
-  progressLabel: { fontSize: 8, fontMono: true, color: '#666666', textAlign: 'right' },
+  progressLabel: { fontSize: 8, fontFamily: MONO_FONT, color: '#666666', textAlign: 'right' },
   milestoneGrid: { flexDirection: 'row', gap: 6, marginBottom: 10 },
   milestonePill: { flex: 1, borderWidth: 1, borderColor: '#c6c6c6', padding: 8, backgroundColor: '#f3f3f4' },
   milestoneDone: { backgroundColor: '#000000', borderColor: '#000000' },
   milestoneLabel: { fontSize: 8, fontWeight: '900', color: '#000000' },
-  milestoneSub: { fontSize: 7, fontMono: true, color: '#777777', marginTop: 2 },
+  milestoneSub: { fontSize: 7, fontFamily: MONO_FONT, color: '#777777', marginTop: 2 },
   teaserCard: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: '#c6c6c6', padding: 10, backgroundColor: '#ffffff' },
   teaserText: { fontSize: 9, color: '#333333', fontWeight: 'bold', flex: 1 },
 
   // Slide 3 Styles
-  chainRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginVertical: 8, paddingHorizontal: 4 },
+  chainRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 8, paddingHorizontal: 4 },
   chainStep: { alignItems: 'center', width: 62 },
   chainCircle: { width: 24, height: 24, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginBottom: 4 },
-  chainCircleText: { color: '#ffffff', fontSize: 10, fontMono: true, fontWeight: '900' },
+  chainCircleText: { color: '#ffffff', fontSize: 10, fontFamily: MONO_FONT, fontWeight: '900' },
   chainText: { fontSize: 8, fontWeight: '900', textAlign: 'center', color: '#000000' },
   tiersGrid: { flexDirection: 'row', gap: 6, marginBottom: 8 },
   tierBox: { flex: 1, borderWidth: 1, borderColor: '#c6c6c6', padding: 8, backgroundColor: '#f9f9f9' },
-  tierBadge: { fontSize: 7, fontMono: true, color: '#777777', fontWeight: 'bold' },
+  tierBadge: { fontSize: 7, fontFamily: MONO_FONT, color: '#777777', fontWeight: 'bold' },
   tierName: { fontSize: 9, fontWeight: '900', color: '#000000', marginVertical: 2 },
-  tierPts: { fontSize: 7, fontMono: true, color: '#555555' },
+  tierPts: { fontSize: 7, fontFamily: MONO_FONT, color: '#555555' },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   perkChip: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderColor: '#000000', paddingHorizontal: 8, paddingVertical: 4, backgroundColor: '#ffffff' },
   perkChipText: { fontSize: 8, fontWeight: '900', color: '#000000' },
@@ -464,16 +471,16 @@ const styles = StyleSheet.create({
   // Slide 4 Styles
   heroBadgeBox: { padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 },
   top5Circle: { width: 48, height: 48, borderWidth: 1, borderColor: '#ffffff', justifyContent: 'center', alignItems: 'center' },
-  top5Text: { fontSize: 8, fontMono: true, fontWeight: '900', color: '#ffffff' },
+  top5Text: { fontSize: 8, fontFamily: MONO_FONT, fontWeight: '900', color: '#ffffff' },
   top5Number: { fontSize: 16, fontWeight: '900', color: '#ffffff' },
   heroBadgeTitle: { fontSize: 11, fontWeight: '900', color: '#ffffff', letterSpacing: 0.5 },
   heroBadgeDesc: { fontSize: 9, color: '#cccccc', lineHeight: 13, marginTop: 2 },
   benchmarkContainer: { borderWidth: 1, borderColor: '#c6c6c6', padding: 10, backgroundColor: '#f9f9f9', marginBottom: 10 },
   benchmarkRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
-  benchmarkLabel: { width: 90, fontSize: 8, color: '#555555', fontMono: true },
+  benchmarkLabel: { width: 90, fontSize: 8, color: '#555555', fontFamily: MONO_FONT },
   benchmarkTrack: { flex: 1, height: 5, backgroundColor: '#e5e7eb', marginHorizontal: 8 },
   benchmarkFill: { height: '100%' },
-  benchmarkPct: { width: 28, fontSize: 8, fontMono: true, textAlign: 'right', fontWeight: 'bold' },
+  benchmarkPct: { width: 28, fontSize: 8, fontFamily: MONO_FONT, textAlign: 'right', fontWeight: 'bold' },
   impactGrid: { flexDirection: 'row', gap: 10 },
   impactCol: { flex: 1, borderWidth: 1, borderColor: '#c6c6c6', padding: 8, backgroundColor: '#ffffff' },
   impactTitle: { fontSize: 9, fontWeight: '900', color: '#000000', marginTop: 4 },
@@ -486,7 +493,7 @@ const styles = StyleSheet.create({
   featureTitle: { fontSize: 10, fontWeight: '900', letterSpacing: 0.5 },
   featureDesc: { fontSize: 9, color: '#5e5e5e', marginTop: 1, lineHeight: 13 },
   syncNoticeBox: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: '#000000', padding: 10, backgroundColor: '#f3f3f4' },
-  syncNoticeText: { fontSize: 9, fontMono: true, color: '#000000', fontWeight: 'bold', flex: 1 },
+  syncNoticeText: { fontSize: 9, fontFamily: MONO_FONT, color: '#000000', fontWeight: 'bold', flex: 1 },
 
   // Footer & Navigation
   footerBar: { paddingHorizontal: 24, paddingVertical: 18, borderTopWidth: 1, borderTopColor: '#e8e8e8', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
@@ -494,5 +501,5 @@ const styles = StyleSheet.create({
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#d1d5db' },
   dotActive: { width: 18, borderRadius: 3 },
   actionBtn: { paddingVertical: 12, paddingHorizontal: 20 },
-  actionBtnText: { color: '#ffffff', fontSize: 11, fontMono: true, fontWeight: '900', letterSpacing: 1 }
+  actionBtnText: { color: '#ffffff', fontSize: 11, fontFamily: MONO_FONT, fontWeight: '900', letterSpacing: 1 }
 });

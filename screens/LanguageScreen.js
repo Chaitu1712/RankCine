@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS } from '../constants/theme';
 import { useLanguage } from '../context/LanguageContext';
+
+const MONO_FONT = Platform.OS === 'ios' ? 'Menlo' : 'monospace';
 
 const LANGUAGES = [
   { code: 'EN', name: 'English', native: 'English' },
@@ -20,11 +21,6 @@ export default function LanguageScreen({ navigation }) {
 
   const handleSelectLanguage = async (code) => {
     await setLanguage(code);
-    try {
-      await AsyncStorage.setItem('rankcine_onboarding_completed', 'true');
-    } catch {
-      // Ignored
-    }
 
     if (navigation.canGoBack()) {
       navigation.goBack();
@@ -36,7 +32,7 @@ export default function LanguageScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.headerRow}>
-        <Text style={styles.header}>{t('choose_language')}</Text>
+        <Text style={styles.header}>{t('choose_language') || 'Choose your language'}</Text>
       </View>
 
       <FlatList
@@ -78,7 +74,7 @@ const styles = StyleSheet.create({
   cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
   squareIndicator: { width: 14, height: 14, backgroundColor: COLORS.containerHigh, borderWidth: 1, borderColor: COLORS.borderLight },
   squareIndicatorActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  code: { fontSize: 9, fontWeight: 'bold', color: COLORS.textMuted, marginBottom: 2, fontMono: true },
+  code: { fontSize: 9, fontWeight: 'bold', color: COLORS.textMuted, marginBottom: 2, fontFamily: MONO_FONT },
   name: { fontSize: 16, fontWeight: '900', color: COLORS.primary },
   nativeName: { fontSize: 11, color: COLORS.textSecondary, marginTop: 2, fontWeight: '600' }
 });
