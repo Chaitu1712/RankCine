@@ -54,7 +54,7 @@ export default function ProfileScreen({ navigation }) {
       mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.8,
+      quality: 0.65,
     });
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
@@ -185,7 +185,6 @@ export default function ProfileScreen({ navigation }) {
         <Text style={[styles.username, { color: theme.primary }]}>{displayName.toUpperCase()}</Text>
         <Text style={styles.handle}>{displayHandle.toLowerCase()}</Text>
 
-        {/* 2-COLUMN METRICS MATRIX */}
         <View style={styles.metricsMatrix}>
           <View style={[styles.metricCard, { borderWidth: highContrast ? 2 : 1 }]}>
             <Text style={styles.metricCardLabel}>{t('total_reviewed') || 'TOTAL AUDITED'}</Text>
@@ -197,7 +196,6 @@ export default function ProfileScreen({ navigation }) {
           </View>
         </View>
 
-        {/* ACCURACY PERCENTILE GAUGE */}
         <View style={[styles.gaugeContainer, { borderWidth: highContrast ? 2 : 1 }]}>
           <View style={styles.gaugeHeader}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>

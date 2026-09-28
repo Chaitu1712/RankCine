@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Modal, FlatList, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Feather } from '@expo/vector-icons';
+import auth from '@react-native-firebase/auth';
 import { COLORS } from '../constants/theme';
 import { mobileApi } from '../services/mobileApi';
 import { sendPhoneOtp, confirmPhoneOtp } from '../services/firebaseAuth';
@@ -25,6 +27,8 @@ const COUNTRY_DIAL_CODES = [
   { country: 'Spain', code: '+34', iso: 'ES', placeholder: 'e.g. 612 34 56 78' },
   { country: 'Saudi Arabia', code: '+966', iso: 'SA', placeholder: 'e.g. 50 123 4567' }
 ];
+
+const COOLDOWN_KEY = '@rankcine_otp_cooldown_reg';
 
 const COUNTRIES = [
   'India', 'United States', 'United Kingdom', 'Canada', 'Australia', 
@@ -135,8 +139,51 @@ export default function RegisterScreen({ route, navigation }) {
   const [showDialModal, setShowDialModal] = useState(false);
   const [confirmationResult, setConfirmationResult] = useState(null);
 
+  const [cooldownSeconds, setCooldownSeconds] = useState(0);
+  const isDailyLocked = cooldownSeconds > 1800;
+
   const availableStates = STATES_BY_COUNTRY[country] || ['General Region', 'Other'];
   const selectedCountryObj = COUNTRY_DIAL_CODES.find(c => c.code === countryCode) || COUNTRY_DIAL_CODES[0];
+
+  useEffect(() => {
+    const loadStoredCooldown = async () => {
+      try {
+        const stored = await AsyncStorage.getItem(COOLDOWN_KEY);
+        if (stored) {
+          const remaining = Math.ceil((parseInt(stored, 10) - Date.now()) / 1000);
+          if (remaining > 0) {
+            setCooldownSeconds(remaining);
+          } else {
+            await AsyncStorage.removeItem(COOLDOWN_KEY);
+          }
+        }
+      } catch {}
+    };
+    loadStoredCooldown();
+  }, []);
+
+  useEffect(() => {
+    if (cooldownSeconds <= 0) return;
+
+    const timer = setInterval(() => {
+      setCooldownSeconds((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          AsyncStorage.removeItem(COOLDOWN_KEY).catch(() => {});
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [cooldownSeconds]);
+
+  const startCooldown = async (seconds) => {
+    const expiry = Date.now() + seconds * 1000;
+    setCooldownSeconds(seconds);
+    await AsyncStorage.setItem(COOLDOWN_KEY, expiry.toString());
+  };
 
   useEffect(() => {
     if (prefilledPhone) {
@@ -166,6 +213,8 @@ export default function RegisterScreen({ route, navigation }) {
   };
 
   const handleSendOtp = async () => {
+    if (cooldownSeconds > 0) return;
+
     if (!phoneDigits.trim()) {
       Alert.alert('Required', 'Please enter your mobile phone number.');
       return;
@@ -176,12 +225,30 @@ export default function RegisterScreen({ route, navigation }) {
       setError('');
       const fullPhone = getCleanPhone();
 
+      const rateCheck = await mobileApi.post('/auth/otp/check-rate-limit', { phoneNumber: fullPhone, action:'REGISTER' });
+
+      const checkRes = await mobileApi.get(`/auth/check-user?target=${encodeURIComponent(fullPhone)}`);
+      if (checkRes && checkRes.exists) {
+        setError('An active account with this phone number already exists. Please log in.');
+        Alert.alert('Account Exists', 'This phone number is already registered. Please go to the login screen.');
+        setSendingOtp(false);
+        return;
+      }
+
       const confirmation = await sendPhoneOtp(fullPhone);
       setConfirmationResult(confirmation);
+
+      await mobileApi.post('/auth/otp/send', { phoneNumber: fullPhone, action:'REGISTER' });
+      await startCooldown(rateCheck?.cooldownSeconds || 60);
 
       Alert.alert('OTP Sent', `Verification code dispatched to ${fullPhone}`);
     } catch (err) {
       console.error('Firebase Phone Auth Error:', err);
+
+      if (err.status === 429) {
+        await startCooldown(err.retryAfterSeconds || 60);
+      }
+
       Alert.alert('SMS Error', err.message || 'Failed to dispatch verification OTP.');
     } finally {
       setSendingOtp(false);
@@ -223,12 +290,16 @@ export default function RegisterScreen({ route, navigation }) {
       return;
     }
 
+    let createdFbUser = null;
+
     try {
       setLoading(true);
       setError('');
 
       const fullPhone = getCleanPhone();
-      const { idToken } = await confirmPhoneOtp(confirmationResult, otp);
+
+      const { user: fbUser, idToken } = await confirmPhoneOtp(confirmationResult, otp);
+      createdFbUser = fbUser;
 
       const payload = {
         fullName: fullName.trim(),
@@ -254,7 +325,16 @@ export default function RegisterScreen({ route, navigation }) {
       navigation.replace('Main');
     } catch (err) {
       console.error('Registration failed:', err);
-      setError(err.message || 'Failed to create profile. Account may already exist.');
+      setError(err.message || 'Failed to create profile. Please verify your details.');
+
+      try {
+        const userToDelete = createdFbUser || auth().currentUser;
+        if (userToDelete) {
+          await userToDelete.delete();
+        }
+      } catch (rollbackErr) {
+        console.warn('Firebase user deletion rollback error:', rollbackErr);
+      }
     } finally {
       setLoading(false);
     }
@@ -280,6 +360,18 @@ export default function RegisterScreen({ route, navigation }) {
             {t('mandatory_fields_notice') || 'Fields marked with a red asterisk (*) are required.'}
           </Text>
         </View>
+
+        {isDailyLocked && (
+          <View style={styles.lockoutBanner}>
+            <Feather name="alert-triangle" size={14} color="#ffffff" style={{ marginTop: 2 }} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.lockoutBannerTitle}>DAILY SMS LIMIT EXCEEDED</Text>
+              <Text style={styles.lockoutBannerText}>
+                Maximum daily verification attempts reached (5 requests). For security, please try again tomorrow.
+              </Text>
+            </View>
+          </View>
+        )}
 
         {error ? (
           <View style={styles.errorBox}>
@@ -348,8 +440,20 @@ export default function RegisterScreen({ route, navigation }) {
             onBlur={() => markTouched('phone')}
           />
 
-          <TouchableOpacity style={styles.otpBtn} onPress={handleSendOtp} disabled={sendingOtp}>
-            <Text style={styles.otpBtnText}>{sendingOtp ? 'SENDING...' : 'SEND OTP'}</Text>
+          <TouchableOpacity 
+            style={[styles.otpBtn, (cooldownSeconds > 0 || sendingOtp) && styles.otpBtnDisabled]} 
+            onPress={handleSendOtp} 
+            disabled={sendingOtp || cooldownSeconds > 0}
+          >
+            <Text style={styles.otpBtnText}>
+              {isDailyLocked
+                ? 'LOCKED'
+                : cooldownSeconds > 0
+                ? `${cooldownSeconds}S`
+                : sendingOtp
+                ? 'SENDING...'
+                : 'SEND OTP'}
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -360,6 +464,7 @@ export default function RegisterScreen({ route, navigation }) {
           style={[styles.input, touched.otp && !otp.trim() && styles.inputError]} 
           placeholder="6-digit verification code" 
           placeholderTextColor={COLORS.textMuted} 
+          secureTextEntry={false}
           value={otp} 
           onChangeText={setOtp} 
           keyboardType="number-pad" 
@@ -557,19 +662,23 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 13, fontWeight: '900', letterSpacing: 0.5 },
   mandatoryNotice: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#f3f3f4', borderWidth: 1, borderColor: '#c6c6c6', padding: 10, marginBottom: 16 },
   mandatoryNoticeText: { fontSize: 10, fontMono: true, color: '#000000', fontWeight: 'bold' },
+  lockoutBanner: { flexDirection: 'row', gap: 10, backgroundColor: '#000000', padding: 14, marginBottom: 16, borderWidth: 1, borderColor: '#333333' },
+  lockoutBannerTitle: { fontSize: 10, fontMono: true, fontWeight: '900', color: '#ffffff', letterSpacing: 0.5, marginBottom: 2 },
+  lockoutBannerText: { fontSize: 10, color: '#c6c6c6', lineHeight: 14 },
   asterisk: { color: COLORS.danger, fontWeight: '900' },
   errorBox: { backgroundColor: '#ffebee', borderWidth: 1, borderColor: '#ffcdd2', padding: 12, marginBottom: 16 },
   errorText: { color: '#c62828', fontSize: 11, fontWeight: 'bold' },
   label: { fontSize: 9, fontWeight: '900', marginBottom: 6, marginTop: 14, color: COLORS.textSecondary, textTransform: 'uppercase' },
   subLabel: { fontSize: 8, fontWeight: '900', marginBottom: 4, color: COLORS.textSecondary, letterSpacing: 0.5 },
-  input: { borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.surface, padding: 12, fontSize: 12, fontWeight: 'bold', marginBottom: 6 },
+  input: { borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.surface, padding: 12, fontSize: 13, fontWeight: 'bold', marginBottom: 6, color: '#000000' },
   inputError: { borderColor: COLORS.danger, borderWidth: 1.5 },
   phoneInputRow: { flexDirection: 'row', gap: 6, marginBottom: 4 },
   dialCodeBtn: { borderWidth: 1, borderColor: COLORS.border, paddingHorizontal: 10, backgroundColor: '#f3f3f4', flexDirection: 'row', alignItems: 'center', gap: 4 },
-  dialCodeText: { fontSize: 11, fontMono: true, fontWeight: 'bold' },
-  phoneInput: { flex: 1, borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.surface, padding: 12, fontSize: 12, fontWeight: 'bold' },
-  otpBtn: { borderWidth: 1, borderColor: '#000000', paddingHorizontal: 12, justifyContent: 'center', backgroundColor: '#f3f3f4' },
-  otpBtnText: { fontSize: 8, fontWeight: '900', textAlign: 'center' },
+  dialCodeText: { fontSize: 11, fontMono: true, fontWeight: 'bold', color: '#000000' },
+  phoneInput: { flex: 1, borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.surface, padding: 12, fontSize: 13, fontWeight: 'bold', color: '#000000' },
+  otpBtn: { borderWidth: 1, borderColor: '#000000', paddingHorizontal: 12, justifyContent: 'center', backgroundColor: '#f3f3f4', minWidth: 80 },
+  otpBtnDisabled: { opacity: 0.5 },
+  otpBtnText: { fontSize: 8, fontWeight: '900', textAlign: 'center', color: '#000000' },
   dobRow: { flexDirection: 'row', gap: 8, marginBottom: 6 },
   multiRow: { flexDirection: 'row', gap: 10 },
   pickerBtn: { borderWidth: 1, borderColor: COLORS.border, padding: 12, backgroundColor: COLORS.surface, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
